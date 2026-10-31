@@ -292,16 +292,17 @@
             margin-top: 15px;
             border-radius: 8px;
             overflow: hidden;
-            max-width: 600px; /* Ограничиваем максимальную ширину */
-            width: 100%;
+            max-width: 600px; /* Максимальная ширина для 16:9 */
+            max-height: 350px; /* Максимальная высота для 1:1 */
             border: 1px solid var(--border);
             box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            display: inline-block; /* Контейнер подстраивается под размер картинки */
         }
         .news-image-container img {
             display: block;
-            width: 100%;
-            height: auto; /* Высота подстраивается под оригинал */
-            object-fit: cover;
+            max-width: 100%;
+            max-height: 350px; /* Ограничиваем высоту */
+            object-fit: contain; /* Картинка не обрезается, а вписывается в рамки */
         }
         
         /* Тосты и обновление */
@@ -661,7 +662,8 @@
                 <div class="panel mouse-glow mb-20">
                     <div class="mono" style="color:var(--accent); font-size:0.8rem; margin-bottom:5px;">> DATE: ${n.date}</div>
                     <h3 style="color:#fff; margin-bottom:10px;">${n.title}</h3>
-                    <p style="white-space:pre-wrap;">${n.content}</p>${n.image ? `<div class="news-image-container"><img src="${n.image}" alt="News Image" loading="lazy"></div>` : ''}${n.image ? `<img src="${n.image}" style="width:100%; border-radius:8px; margin-top:10px;">` : ''}
+                    <p style="white-space:pre-wrap;">${n.content}</p>
+                    ${n.image ? `<div class="news-image-container"><img src="${n.image}" alt="News Image" loading="lazy"></div>` : ''}
                 </div>
             `).join('');
 
