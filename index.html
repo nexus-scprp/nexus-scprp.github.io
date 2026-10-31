@@ -287,6 +287,23 @@
         .mnt-progress i { display: block; height: 100%; width: 40%; background: var(--yellow); animation: slide 2s infinite linear; }
         @keyframes slide { 0% { transform: translateX(-100%); } 100% { transform: translateX(300%); } }
 
+        /* Стили для картинок в новостях */
+        .news-image-container {
+            margin-top: 15px;
+            border-radius: 8px;
+            overflow: hidden;
+            max-width: 600px; /* Ограничиваем максимальную ширину */
+            width: 100%;
+            border: 1px solid var(--border);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+        .news-image-container img {
+            display: block;
+            width: 100%;
+            height: auto; /* Высота подстраивается под оригинал */
+            object-fit: cover;
+        }
+        
         /* Тосты и обновление */
         .toast-container { position: fixed; bottom: 24px; right: 24px; z-index: 10000; display: flex; flex-direction: column; gap: 10px; }
         .toast {
@@ -644,8 +661,7 @@
                 <div class="panel mouse-glow mb-20">
                     <div class="mono" style="color:var(--accent); font-size:0.8rem; margin-bottom:5px;">> DATE: ${n.date}</div>
                     <h3 style="color:#fff; margin-bottom:10px;">${n.title}</h3>
-                    <p style="white-space:pre-wrap;">${n.content}</p>
-                    ${n.image ? `<img src="${n.image}" style="width:100%; border-radius:8px; margin-top:10px;">` : ''}
+                    <p style="white-space:pre-wrap;">${n.content}</p>${n.image ? `<div class="news-image-container"><img src="${n.image}" alt="News Image" loading="lazy"></div>` : ''}${n.image ? `<img src="${n.image}" style="width:100%; border-radius:8px; margin-top:10px;">` : ''}
                 </div>
             `).join('');
 
