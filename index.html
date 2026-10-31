@@ -951,6 +951,14 @@
         }
 
         async function createNews() {
+            // --- ПРОВЕРКА СЕССИИ ---
+            const { data: { session } } = await db.auth.getSession();
+            if (!session) {
+                showToast('Сессия истекла. Войдите в админку заново.', 'error');
+                return;
+            }
+            // -----------------------
+
             const title = document.getElementById('newsTitle').value;
             const content = document.getElementById('newsContent').value;
             const imageUrl = document.getElementById('newsImage').value;
