@@ -292,17 +292,17 @@
             margin-top: 15px;
             border-radius: 8px;
             overflow: hidden;
-            max-width: 600px; /* Максимальная ширина для 16:9 */
-            max-height: 350px; /* Максимальная высота для 1:1 */
+            max-width: 600px; 
+            max-height: 350px; 
             border: 1px solid var(--border);
             box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-            display: inline-block; /* Контейнер подстраивается под размер картинки */
+            display: inline-block; 
         }
         .news-image-container img {
             display: block;
             max-width: 100%;
-            max-height: 350px; /* Ограничиваем высоту */
-            object-fit: contain; /* Картинка не обрезается, а вписывается в рамки */
+            max-height: 350px; 
+            object-fit: contain; 
         }
         
         /* Тосты и обновление */
@@ -503,7 +503,7 @@
             const date = new Date().toLocaleString('ru-RU');
             const userName = DB.user ? DB.user.email.split('@')[0] : 'System';
             DB.logs.unshift({ date, text: `${userName}: ${action}` });
-            if (DB.logs.length > 50) DB.logs.pop(); // Храним последние 50
+            if (DB.logs.length > 50) DB.logs.pop();
             await saveSettingToSupabase('action_logs', DB.logs);
         }
 
@@ -640,6 +640,9 @@
                     try { routes[hash](content); } 
                     catch (err) { console.error(err); content.innerHTML = `<div class="panel"><h2 style="color:red">Ошибка</h2></div>`; }
                     content.classList.remove('fade-out');
+                    
+                    // ВАЖНО: Инициализируем фонарик ПОСЛЕ того, как HTML отрисован
+                    initMouseGlow(); 
                 }, 200);
             }
             
@@ -647,8 +650,6 @@
             
             const mnt = document.getElementById('maintenance');
             if (mnt) { DB.settings.maintenance && !DB.user ? mnt.classList.add('show') : mnt.classList.remove('show'); }
-            
-            initMouseGlow(); 
         }
 
         window.addEventListener('hashchange', router);
@@ -744,7 +745,7 @@
                         </div>
                     `;
                 });
-                html += `</div>`; 
+                html += `</div>`;
             });
             container.innerHTML = html;
         }
@@ -756,15 +757,55 @@
         function renderDownload(container) {
             container.innerHTML = `
                 <h1 class="mb-20">Скачать лаунчер</h1>
+                <p class="muted mb-20" style="max-width: 600px;">Официальный лаунчер Nexus • SCP-RP для входа на сервер. Скачай, установи — и играй.</p>
+
                 <div class="panel mouse-glow mb-20" style="text-align: center; padding: 50px 20px; background: linear-gradient(180deg, rgba(88,153,249,0.08) 0%, transparent 100%);">
                     <h2 style="border: none; margin-bottom: 30px; color: #fff;">Готовы начать?</h2>
                     <a href="https://github.com/nexus-scprp/nexus-scprp.github.io/releases/download/Launcher/NexusLauncher-Setup.exe" class="btn btn-primary" style="padding: 20px 50px; font-size: 1.1rem; display: inline-flex; align-items: center; gap: 12px;">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
                         СКАЧАТЬ ЛАУНЧЕР
                     </a>
+                    <div class="mono muted mt-15" style="font-size: 12px; letter-spacing: 1px;">Windows · .exe</div>
                 </div>
+
+                <h2>// Как установить</h2>
+                <div class="grid-4 mb-20">
+                    <div class="panel mouse-glow">
+                        <div class="mono" style="color: var(--accent); margin-bottom: 5px;">ШАГ 01</div>
+                        <h4 style="color: #fff; margin-bottom: 10px;">Скачай .exe</h4>
+                        <p class="muted" style="font-size: 13px; margin-bottom: 0;">Нажми на кнопку выше и сохрани файл на свой компьютер.</p>
+                    </div>
+                    <div class="panel mouse-glow">
+                        <div class="mono" style="color: var(--accent); margin-bottom: 5px;">ШАГ 02</div>
+                        <h4 style="color: #fff; margin-bottom: 10px;">Запусти установщик</h4>
+                        <p class="muted" style="font-size: 13px; margin-bottom: 0;">Открой файл и следуй инструкциям на экране.</p>
+                    </div>
+                    <div class="panel mouse-glow">
+                        <div class="mono" style="color: var(--accent); margin-bottom: 5px;">ШАГ 03</div>
+                        <h4 style="color: #fff; margin-bottom: 10px;">Авторизуйся</h4>
+                        <p class="muted" style="font-size: 13px; margin-bottom: 0;">Введи свой игровой ник или данные аккаунта.</p>
+                    </div>
+                    <div class="panel mouse-glow">
+                        <div class="mono" style="color: var(--accent); margin-bottom: 5px;">ШАГ 04</div>
+                        <h4 style="color: #fff; margin-bottom: 10px;">Заходи и играй</h4>
+                        <p class="muted" style="font-size: 13px; margin-bottom: 0;">Дождись загрузки файлов и подключайся к серверу!</p>
+                    </div>
+                </div>
+
                 <div class="rules-punish mb-20" style="border-left-color: var(--yellow); background: rgba(241, 196, 15, 0.05); font-size: 13px;">
-                    <b>⚠️ Важно:</b> если антивирус ругается — это ложное срабатывание.
+                    <b>⚠️ Важно:</b> если антивирус или Windows SmartScreen ругается на лаунчер — это <b>ложное срабатывание</b>. Нажми «Подробнее» → «Выполнить в любом случае». Лаунчер безопасен.
+                </div>
+
+                <h2>// Частые проблемы</h2>
+                <div class="panel mouse-glow">
+                    <div class="rules-sub">
+                        <div class="rules-sub-title">Антивирус блокирует запуск</div>
+                        <p>Добавь папку с лаунчером в исключения антивируса. Также попробуй нажать правой кнопкой по .exe → «Свойства» → поставь галочку «Разблокировать» → ОК.</p>
+                    </div>
+                    <div class="rules-sub" style="margin-bottom: 0;">
+                        <div class="rules-sub-title">Не подключается к серверу</div>
+                        <p style="margin-bottom: 0;">Проверь IP-адрес на странице <b>«Главная»</b>. Если сервер на тех. работах — просто зайди позже.</p>
+                    </div>
                 </div>
             `;
         }
@@ -960,7 +1001,7 @@
             DB.settings.serverStatus = document.getElementById('setServerStatus').value;
             DB.settings.hostingStatus = document.getElementById('setHostingStatus').value;
             DB.settings.autoStatus = document.getElementById('swAutoStatus').classList.contains('on');
-            DB.settings.discordWidgetId = document.getElementById('setDiscordWidget').value.trim(); // <--- ДОБАВИЛИ
+            DB.settings.discordWidgetId = document.getElementById('setDiscordWidget').value.trim();
 
             for (let key in DB.settings) { await saveSettingToSupabase(key, DB.settings[key]); }
             await addLog('Обновил настройки сервера');
@@ -969,13 +1010,8 @@
         }
 
         async function createNews() {
-            // --- ПРОВЕРКА СЕССИИ ---
             const { data: { session } } = await db.auth.getSession();
-            if (!session) {
-                showToast('Сессия истекла. Войдите в админку заново.', 'error');
-                return;
-            }
-            // -----------------------
+            if (!session) { showToast('Сессия истекла. Войдите заново.', 'error'); return; }
 
             const title = document.getElementById('newsTitle').value;
             const content = document.getElementById('newsContent').value;
@@ -992,10 +1028,8 @@
                 showToast('Загрузка картинки...');
                 
                 const { data, error } = await db.storage.from('images').upload(fileName, file);
-                if (error) {
-                    showToast('Ошибка загрузки файла: ' + error.message, 'error');
-                    return;
-                }
+                if (error) { showToast('Ошибка загрузки: ' + error.message, 'error'); return; }
+                
                 const { data: publicUrl } = db.storage.from('images').getPublicUrl(fileName);
                 finalImage = publicUrl.publicUrl;
             }
@@ -1239,17 +1273,14 @@
         // ИНИЦИАЛИЗАЦИЯ
         // ==========================================
         window.addEventListener('load', async () => {
-            // Ждем загрузку данных
             if (db) await loadDataFromSupabase();
             
-            // Скрываем прелоадер
             const preloader = document.getElementById('preloader');
             if (preloader) {
                 preloader.classList.add('hidden');
                 setTimeout(() => preloader.remove(), 500);
             }
             
-            // Запускаем роутер
             router();
             setInterval(updateServerStatus, 120000);
         });
