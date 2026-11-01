@@ -777,14 +777,18 @@
         });
 
         // ==========================================
-        // ГЕНЕРАТОР АВАТАРОК
+        // ГЕНЕРАТОР АВАТАРОК (ИСПРАВЛЕННЫЙ)
         // ==========================================
         function getAvatarHTML(nick) {
             if(!nick) return '';
-            // Пытаемся загрузить с mc-heads (лицензия), при ошибке - ely.by (пиратка), при ошибке - Стив
-            return `<img class="staff-avatar" src="https://mc-heads.net/avatar/${nick}/32" 
-                    onerror="this.onerror=null; this.src='https://skinsystem.ely.by/heads/${nick}/32'; 
-                    if(this.src.includes('ely.by')) { this.onerror=null; this.src='https://mc-heads.net/avatar/Steve/32'; }">`;
+            const safeNick = encodeURIComponent(nick);
+            
+            // Логика: 
+            // 1. Грузим лицензию (Minotar)
+            // 2. Если 404 -> меняем обработчик onerror на Стива и грузим Ely.by
+            // 3. Если Ely.by тоже 404 -> срабатывает новый обработчик и ставит Стива
+            return `<img class="staff-avatar" src="https://minotar.net/helm/${safeNick}/32" 
+                    onerror="this.onerror=function(){this.src='https://minotar.net/helm/Steve/32';}; this.src='https://skinsystem.ely.by/heads/${safeNick}/32';">`;
         }
 
         // ==========================================
