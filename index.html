@@ -818,28 +818,26 @@
             }
         };
 
+        // ==========================================
+        // ГЕНЕРАТОР АВАТАРОК (ИДЕАЛЬНЫЙ 2 СЛОЙ)
+        // ==========================================
         function getAvatarHTML(nick, source = 'mojang') {
             if(!nick) return '';
             const safeNick = encodeURIComponent(nick);
             
             if (source === 'ely') {
-                // Для Ely.by: берем текстуру 64x64 и накладываем два слоя (лицо и оверлей)
+                // Для Ely.by: загружаем текстуру 64x64 и накладываем 2 слоя абсолютным позиционированием
                 const skinUrl = `https://skinsystem.ely.by/skins/${safeNick}.png`;
-                return `<div class="staff-avatar" 
-                        style="
-                            background-image: url('${skinUrl}'), url('${skinUrl}');
-                            background-size: 256px 256px; 
-                            background-position: -32px -32px, -160px -32px; 
-                            background-repeat: no-repeat;
-                            image-rendering: pixelated;
-                        " 
-                        title="${safeNick}"></div>`;
+                return `<div class="staff-avatar" style="position:relative; overflow:hidden; border-radius:4px; background:#111; border:1px solid var(--border); display:inline-block; width:32px; height:32px; vertical-align:middle;">
+                            <!-- Слой 1: Голова (смещение 8,8 умноженное на 4) -->
+                            <img src="${skinUrl}" style="position:absolute; width:256px; height:256px; left:-32px; top:-32px; image-rendering:pixelated;">
+                            <!-- Слой 2: Оверлей/Шлем (смещение 40,8 умноженное на 4) -->
+                            <img src="${skinUrl}" style="position:absolute; width:256px; height:256px; left:-160px; top:-32px; image-rendering:pixelated;">
+                        </div>`;
             } else {
-                // Для лицензии: используем mc-heads (он сам рендерит второй слой)
-                // Если он падает, пробуем minotar
-                return `<img class="staff-avatar" 
-                        src="https://mc-heads.net/avatar/${safeNick}/32" 
-                        onerror="this.onerror=null; this.src='https://minotar.net/helm/${safeNick}/32';" 
+                // Для лицензии: mc-heads автоматически накладывает второй слой!
+                return `<img class="staff-avatar" src="https://mc-heads.net/avatar/${safeNick}/32" 
+                        onerror="this.onerror=null; this.src='https://visage.surgeplay.com/head/32/${safeNick}';" 
                         title="${safeNick}">`;
             }
         }
@@ -848,17 +846,14 @@
         function updateStaffPreview() {
             const name = document.getElementById('staffName').value.trim();
             const source = document.getElementById('staffSkinSource').value;
-            const preview = document.getElementById('staffSkinPreview');
+            const previewContainer = document.getElementById('staffSkinPreview');
+            
+            if (!previewContainer) return;
             
             if (name) {
-                const tempDiv = document.createElement('div');
-                tempDiv.innerHTML = getAvatarHTML(name, source);
-                const imgElement = tempDiv.querySelector('img');
-                preview.src = imgElement.src;
-                preview.className = imgElement.className;
+                previewContainer.innerHTML = getAvatarHTML(name, source);
             } else {
-                preview.src = 'https://minotar.net/helm/Steve/32';
-                preview.className = 'staff-avatar';
+                previewContainer.innerHTML = getAvatarHTML('Steve', source);
             }
         }
 
@@ -1172,7 +1167,7 @@
                                 <label class="mono muted">Имя (Ник)</label>
                                 <div style="display:flex; align-items:center; gap:10px;">
                                     <input type="text" id="staffName" class="input-field" placeholder="Никнейм" style="margin-bottom:0;" oninput="updateStaffPreview()">
-                                    <img id="staffSkinPreview" class="staff-avatar" src="https://minotar.net/helm/Steve/32" style="flex-shrink:0;">
+                                    <div id="staffSkinPreview" style="width:32px; height:32px; flex-shrink:0;"></div>
                                 </div>
                             </div>
                             <div>
