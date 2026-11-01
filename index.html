@@ -784,29 +784,24 @@
         });
 
         // ==========================================
-        // ГЕНЕРАТОР АВАТАРОК (КАСКАДНЫЙ ФОЛЛБЕК)
+        // ГЕНЕРАТОР АВАТАРОК (ELY.BY ЧЕРЕЗ SKINS + CSS)
         // ==========================================
         function getAvatarHTML(nick, source = 'mojang') {
             if(!nick) return '';
             const safeNick = encodeURIComponent(nick);
-            const steve = `https://minotar.net/helm/Steve/32`;
             
-            let urls = [];
             if (source === 'ely') {
-                urls = [
-                    `https://skinsystem.ely.by/heads/${safeNick}/32`,
-                    `https://minotar.net/helm/${safeNick}/32`,
-                    `https://visage.surgeplay.com/head/32/${safeNick}`,
-                    `https://mc-heads.net/avatar/${safeNick}/32`
-                ];
+                // Ely.by: грузим полный скин и обрезаем через CSS (см. стили)
+                return `<img class="staff-avatar staff-avatar-ely" 
+                        src="https://skinsystem.ely.by/skins/${safeNick}.png" 
+                        onerror="this.onerror=null; this.src='https://minotar.net/helm/Steve/32';">`;
             } else {
-                urls = [
-                    `https://minotar.net/helm/${safeNick}/32`,
-                    `https://visage.surgeplay.com/head/32/${safeNick}`,
-                    `https://mc-heads.net/avatar/${safeNick}/32`,
-                    `https://skinsystem.ely.by/heads/${safeNick}/32`
-                ];
+                // Лицензия: minotar.net (надежный, с оверлеем)
+                return `<img class="staff-avatar" 
+                        src="https://minotar.net/helm/${safeNick}/32" 
+                        onerror="this.onerror=null; this.src='https://minotar.net/helm/Steve/32';">`;
             }
+        }
 
             // Собираем каскадный onerror (пробует url[1], потом url[2], потом url[3], потом Стива)
             let onerror = `this.onerror=null; this.src='${steve}';`;
