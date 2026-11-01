@@ -800,21 +800,49 @@
         // ==========================================
         // ГЕНЕРАТОР АВАТАРОК (ELY.BY ЧЕРЕЗ SKINS + CSS)
         // ==========================================
+        // Глобальная функция для смены скина при ошибке загрузки
+        window.handleSkinError = function(img) {
+            const nick = img.getAttribute('data-nick');
+            const stage = parseInt(img.getAttribute('data-stage') || '0');
+            const steve = 'https://minotar.net/helm/Steve/32';
+            
+            if (stage === 0) {
+                // Если первый скин не загрузился, пробуем второй источник
+                img.setAttribute('data-stage', '1');
+                img.src = img.getAttribute('data-fallback');
+            } else if (stage === 1) {
+                // Если и второй упал, ставим Стива
+                img.setAttribute('data-stage', '2');
+                img.src = steve;
+            }
+        };
+
         function getAvatarHTML(nick, source = 'mojang') {
             if(!nick) return '';
             const safeNick = encodeURIComponent(nick);
             
+            let primaryUrl = '';
+            let fallbackUrl = '';
+            let extraClass = '';
+
             if (source === 'ely') {
-                // Ely.by: грузим полный скин и обрезаем через CSS (см. стили)
-                return `<img class="staff-avatar staff-avatar-ely" 
-                        src="https://skinsystem.ely.by/skins/${safeNick}.png" 
-                        onerror="this.onerror=null; this.src='https://minotar.net/helm/Steve/32';">`;
+                // Пиратка: основной - ely.by (полный скин), резерв - minotar
+                primaryUrl = `https://skinsystem.ely.by/skins/${safeNick}.png`;
+                fallbackUrl = `https://minotar.net/helm/${safeNick}/32`;
+                extraClass = 'staff-avatar-ely'; // Класс для обрезки
             } else {
-                // Лицензия: minotar.net (надежный, с оверлеем)
-                return `<img class="staff-avatar" 
-                        src="https://minotar.net/helm/${safeNick}/32" 
-                        onerror="this.onerror=null; this.src='https://minotar.net/helm/Steve/32';">`;
+                // Лицензия: основной - minotar, резерв - ely.by
+                primaryUrl = `https://minotar.net/helm/${safeNick}/32`;
+                fallbackUrl = `https://skinsystem.ely.by/skins/${safeNick}.png`;
+                extraClass = '';
             }
+
+            return `<img class="staff-avatar ${extraClass}" 
+                    src="${primaryUrl}" 
+                    data-nick="${safeNick}" 
+                    data-fallback="${fallbackUrl}" 
+                    data-stage="0"
+                    onerror="handleSkinError(this)">`;
         }
 
             // Собираем каскадный onerror (пробует url[1], потом url[2], потом url[3], потом Стива)
@@ -835,10 +863,12 @@
             if (name) {
                 const tempDiv = document.createElement('div');
                 tempDiv.innerHTML = getAvatarHTML(name, source);
-                const imgSrc = tempDiv.querySelector('img').src;
-                preview.src = imgSrc;
+                const imgElement = tempDiv.querySelector('img');
+                preview.src = imgElement.src;
+                preview.className = imgElement.className; // Переносим класс обрезки
             } else {
                 preview.src = 'https://minotar.net/helm/Steve/32';
+                preview.className = 'staff-avatar';
             }
         }
 
@@ -1737,18 +1767,22 @@
             document.documentElement.style.setProperty('--parallax-y', `${y}px`);
         });
 
-        // ==========================================
-        // ИНИЦИАЛИЗАЦИЯ
-        // ==========================================
         window.addEventListener('load', async () => {
-            if (db) await loadDataFromSupabase();
-            
+            // 1. Пытаемся загрузить данные
+            try {
+                if (db) await loadDataFromSupabase();
+            } catch (e) {
+                console.error("Ошибка при загрузке данных:", e);
+            }
+
+            // 2. Скрываем прелоадер в ЛЮБОМ случае
             const preloader = document.getElementById('preloader');
             if (preloader) {
                 preloader.classList.add('hidden');
                 setTimeout(() => preloader.remove(), 500);
             }
             
+            // 3. Запускаем роутер
             router();
             setInterval(updateServerStatus, 120000);
         });
