@@ -823,15 +823,23 @@
             const safeNick = encodeURIComponent(nick);
             
             if (source === 'ely') {
-                // Для Ely.by используем DIV с фоновой картинкой и CSS-обрезкой
-                return `<div class="staff-avatar staff-avatar-ely" 
-                        style="background-image: url('https://skinsystem.ely.by/skins/${safeNick}.png');" 
+                // Для Ely.by: берем текстуру 64x64 и накладываем два слоя (лицо и оверлей)
+                const skinUrl = `https://skinsystem.ely.by/skins/${safeNick}.png`;
+                return `<div class="staff-avatar" 
+                        style="
+                            background-image: url('${skinUrl}'), url('${skinUrl}');
+                            background-size: 256px 256px; 
+                            background-position: -32px -32px, -160px -32px; 
+                            background-repeat: no-repeat;
+                            image-rendering: pixelated;
+                        " 
                         title="${safeNick}"></div>`;
             } else {
-                // Для лицензии оставляем надежный minotar (он сам отдает ровную голову)
+                // Для лицензии: используем mc-heads (он сам рендерит второй слой)
+                // Если он падает, пробуем minotar
                 return `<img class="staff-avatar" 
-                        src="https://minotar.net/helm/${safeNick}/32" 
-                        onerror="this.onerror=null; this.src='https://minotar.net/helm/Steve/32';"
+                        src="https://mc-heads.net/avatar/${safeNick}/32" 
+                        onerror="this.onerror=null; this.src='https://minotar.net/helm/${safeNick}/32';" 
                         title="${safeNick}">`;
             }
         }
