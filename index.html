@@ -40,6 +40,12 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
         html { scroll-behavior: smooth; }
         
+        /* Кастомный скроллбар */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #0a0d14; }
+        ::-webkit-scrollbar-thumb { background: #2a3441; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+
         body {
             background-color: var(--bg-dark);
             color: var(--text-main);
@@ -199,10 +205,13 @@
         .monitor-label { font-size: 1.1rem; font-weight: 800; color: #fff; margin-bottom: 15px; }
         .monitor-code { font-family: var(--font-mono); font-size: 0.75rem; text-align: left; background: rgba(0,0,0,0.4); border-radius: 8px; padding: 16px; width: 100%; border-left: 3px solid var(--accent); }
         .monitor-stats { display: grid; grid-template-columns: repeat(3, 1fr); border-top: 1px solid var(--border); }
-        .mstat { padding: 15px 10px; text-align: center; border-right: 1px solid var(--border); }
+        .mstat { padding: 15px 10px; text-align: center; border-right: 1px solid var(--border); position: relative; }
         .mstat:last-child { border-right: none; }
         .mk { font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; margin-bottom: 4px; }
         .mv { font-size: 0.85rem; font-weight: 700; color: #fff; }
+        
+        .ip-copy-btn { cursor: pointer; transition: 0.2s; display: inline-block; }
+        .ip-copy-btn:hover { color: var(--accent) !important; text-shadow: 0 0 10px rgba(88,153,249,0.5); }
 
         .status-row { display: grid; grid-template-columns: 1.4fr 1fr 1fr; border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg-panel); backdrop-filter: blur(10px); }
         .status-cell { padding: 30px; border-right: 1px solid var(--border); display: flex; flex-direction: column; justify-content: center; }
@@ -231,7 +240,8 @@
         .rules-label { color: var(--accent); font-weight: 700; }
         .rules-punish { font-family: var(--font-mono); font-size: 12px; background: rgba(0,0,0,0.3); padding: 12px 16px; border-left: 2px solid var(--yellow); border-radius: 0 8px 8px 0; margin-top: 10px; color: var(--text-muted); }
         .rules-bottom-warn { text-align: center; font-family: var(--font-mono); font-size: 12px; color: var(--yellow); padding: 20px; border: 1px dashed rgba(241, 196, 15, 0.3); border-radius: var(--radius); margin-top: 30px; }
-        /* Стили для нативных тегов в редакторе и правилах */
+
+        /* Нативные теги в редакторе */
         .rules-content blockquote, .wysiwyg-editor blockquote, .rules-intro {
             border-left: 3px solid var(--accent); padding-left: 20px; color: #C9D1D9; 
             font-size: 14px; line-height: 1.7; margin-bottom: 35px; font-style: italic;
@@ -257,9 +267,11 @@
         .staff-section-header { display: flex; align-items: center; gap: 12px; padding: 12px 18px; border-radius: var(--radius); background: rgba(255,255,255,0.03); border: 1px solid var(--border); font-weight: 700; color: #fff; margin-bottom: 15px; }
         .staff-section-header.high { background: rgba(255, 77, 77, 0.1); border-color: rgba(255,77,77,0.3); }
         
-        .staff-row { display: grid; grid-template-columns: 50px 1fr auto; gap: 15px; align-items: center; padding: 15px 20px; background: rgba(255,255,255,0.02); border-radius: var(--radius); margin-bottom: 8px; border: 1px solid transparent; }
+        .staff-row { display: flex; align-items: center; justify-content: space-between; padding: 15px 20px; background: rgba(255,255,255,0.02); border-radius: var(--radius); margin-bottom: 8px; border: 1px solid transparent; }
         .staff-row:hover { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); }
-        .staff-num { font-family: var(--font-mono); font-size: 1rem; font-weight: 700; color: var(--accent); }
+        .staff-left { display: flex; align-items: center; gap: 15px; }
+        .staff-num { font-family: var(--font-mono); font-size: 1rem; font-weight: 700; color: var(--accent); min-width: 25px; }
+        .staff-avatar { width: 32px; height: 32px; border-radius: 4px; background: #111; border: 1px solid var(--border); }
         .staff-role-name { font-weight: 600; color: #fff; }
         .staff-person { font-family: var(--font-mono); font-size: 0.85rem; padding: 5px 12px; background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 50px; color: #fff; }
         .staff-vacant { font-family: var(--font-mono); font-size: 0.8rem; padding: 5px 12px; border: 1px dashed var(--border); border-radius: 50px; color: var(--text-muted); }
@@ -310,23 +322,13 @@
 
         /* Стили для картинок в новостях */
         .news-image-container {
-            margin-top: 15px;
-            border-radius: 8px;
-            overflow: hidden;
-            max-width: 600px; 
-            max-height: 350px; 
-            border: 1px solid var(--border);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-            display: inline-block; 
+            margin-top: 15px; border-radius: 8px; overflow: hidden;
+            max-width: 600px; max-height: 350px; border: 1px solid var(--border);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3); display: inline-block; 
         }
-        .news-image-container img {
-            display: block;
-            max-width: 100%;
-            max-height: 350px; 
-            object-fit: contain; 
-        }
+        .news-image-container img { display: block; max-width: 100%; max-height: 350px; object-fit: contain; }
         
-        /* Тосты и обновление */
+        /* Тосты */
         .toast-container { position: fixed; bottom: 24px; right: 24px; z-index: 10000; display: flex; flex-direction: column; gap: 10px; }
         .toast {
             background: var(--bg-panel); border: 1px solid var(--accent);
@@ -340,17 +342,54 @@
         .toast.hide { animation: slideOutRight 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
         @keyframes slideInRight { from { transform: translateX(120%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
         @keyframes slideOutRight { from { transform: translateX(0); opacity: 1; } to { transform: translateX(120%); opacity: 0; } }
+        
         .btn-refresh { background: rgba(255,255,255,0.05); border: 1px solid var(--border); color: var(--text-muted); border-radius: 6px; width: 30px; height: 30px; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.3s; margin-left: 10px; }
         .btn-refresh:hover { color: var(--accent); border-color: var(--accent); background: rgba(88,153,249,0.1); }
         .btn-refresh.spinning svg { animation: spin 1s linear infinite; }
 
-        /* Drag & Drop Стили */
+        /* Drag & Drop */
         .drag-handle { cursor: grab; color: var(--text-muted); padding-right: 10px; font-size: 1.2rem; }
         .drag-handle:active { cursor: grabbing; }
         .staff-admin-row { display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.3); padding: 10px 15px; border-radius: 8px; margin-bottom: 10px; border: 1px solid var(--border); cursor: grab; transition: 0.2s; }
         .staff-admin-row:hover { border-color: var(--accent); }
         .staff-admin-row.dragging { opacity: 0.5; border-style: dashed; }
         .staff-admin-row.drag-over { border-top: 2px solid var(--accent); }
+
+        /* Кнопка наверх */
+        .scroll-top-btn {
+            position: fixed; bottom: 24px; left: 24px; z-index: 900;
+            width: 40px; height: 40px; border-radius: 50%;
+            background: var(--bg-panel); border: 1px solid var(--border); color: var(--text-muted);
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; opacity: 0; pointer-events: none; transition: all 0.3s;
+            backdrop-filter: blur(10px);
+        }
+        .scroll-top-btn.show { opacity: 1; pointer-events: auto; }
+        .scroll-top-btn:hover { color: var(--accent); border-color: var(--accent); box-shadow: 0 0 15px rgba(88,153,249,0.3); }
+
+        /* 404 Terminal */
+        .terminal-404 {
+            display: flex; flex-direction: column; align-items: flex-start; justify-content: center;
+            height: 60vh; font-family: var(--font-mono); font-size: 1.1rem; color: var(--red);
+            line-height: 1.8;
+        }
+        .terminal-404 span { color: var(--text-main); }
+        .terminal-404 .cursor { display: inline-block; width: 8px; height: 16px; background: var(--red); animation: blink 1s step-end infinite; vertical-align: middle; }
+        @keyframes blink { 50% { opacity: 0; } }
+
+        /* Кастомная модалка */
+        .confirm-modal {
+            position: fixed; inset: 0; z-index: 2000; background: rgba(0,0,0,0.8);
+            display: none; align-items: center; justify-content: center; backdrop-filter: blur(5px);
+        }
+        .confirm-modal.active { display: flex; }
+        .confirm-box {
+            background: var(--bg-panel); border: 1px solid var(--border); border-left: 3px solid var(--red);
+            padding: 30px; border-radius: var(--radius); max-width: 400px; width: 90%; text-align: left;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+        }
+        .confirm-box p { color: #fff; font-family: var(--font-mono); margin-bottom: 25px; font-size: 0.95rem;}
+        .confirm-actions { display: flex; gap: 10px; justify-content: flex-end; }
 
         @media (max-width: 900px) {
             .sidebar { transform: translateX(-100%); }
@@ -361,14 +400,13 @@
             .content-wrapper { padding: 20px; }
             .topbar-info { display: none; }
             .status-cell { border-right: none; border-bottom: 1px solid var(--border); }
-            .staff-row { grid-template-columns: 40px 1fr; gap: 10px; text-align: center; }
-            .staff-row > div { justify-self: center; }
+            .staff-row { flex-direction: column; gap: 10px; text-align: center; }
+            .staff-left { flex-direction: column; }
         }
     </style>
 </head>
 <body>
 
-    <!-- Прелоадер -->
     <div id="preloader">
         <div class="spinner"></div>
         <div class="preloader-text">INITIALIZING NEXUS...</div>
@@ -467,7 +505,23 @@
         </div>
     </div>
 
+    <!-- Кастомная модалка подтверждения -->
+    <div class="confirm-modal" id="confirmModal">
+        <div class="confirm-box">
+            <p id="confirmText">> ВНИМАНИЕ: ВЫ УВЕРЕНЫ?</p>
+            <div class="confirm-actions">
+                <button class="btn btn-outline" onclick="resolveConfirm(false)">ОТМЕНА</button>
+                <button class="btn btn-danger" onclick="resolveConfirm(true)">ПОДТВЕРДИТЬ</button>
+            </div>
+        </div>
+    </div>
+
     <div class="toast-container" id="toastContainer"></div>
+
+    <!-- Кнопка наверх -->
+    <button class="scroll-top-btn" id="scrollTopBtn" onclick="window.scrollTo({top: 0, behavior: 'smooth'})">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+    </button>
 
     <script>
         // ==========================================
@@ -492,12 +546,13 @@
             news: [],
             staff: [],
             logs: [],
+            editingNewsId: null,
             settings: {
                 ip: 'play.nexus-scp.ru', version: '1.20.1 FORGE',
                 maintenance: false, maintMsg: 'Сервер находится на обновлении. Пожалуйста, зайдите позже.',
                 serverStatus: 'ONLINE', hostingStatus: 'NORMAL',
-                onlineCount: '0', projectStatus: 'ЗБТ', autoStatus: false,
-                discordWidgetId: ''
+                onlineCount: '0', maxSlots: '100', projectStatus: 'ЗБТ', autoStatus: false,
+                discordWidgetId: '', linkDiscord: '', linkTelegram: '', linkVK: ''
             },
             rules: { discord: '', rp: '', staff: '' },
             user: null
@@ -518,6 +573,29 @@
                 toast.classList.add('hide');
                 setTimeout(() => toast.remove(), 300);
             }, 3000);
+        }
+
+        function copyIP() {
+            const ip = DB.settings.ip;
+            navigator.clipboard.writeText(ip).then(() => {
+                showToast(`IP скопирован: ${ip}`);
+            }).catch(() => {
+                showToast('Ошибка копирования', 'error');
+            });
+        }
+
+        // Кастомная модалка подтверждения
+        let confirmResolve = null;
+        function showConfirm(msg) {
+            document.getElementById('confirmText').textContent = `> ${msg}`;
+            document.getElementById('confirmModal').classList.add('active');
+            return new Promise((resolve) => {
+                confirmResolve = resolve;
+            });
+        }
+        function resolveConfirm(val) {
+            document.getElementById('confirmModal').classList.remove('active');
+            if (confirmResolve) { confirmResolve(val); confirmResolve = null; }
         }
 
         async function addLog(action) {
@@ -581,6 +659,7 @@
             let color = 'var(--green)', label = 'HOSTING_SYSTEM';
             
             if (h === 'UNPAID' || s === 'OFFLINE') { color = 'var(--red)'; label = 'HOSTING_OFFLINE'; }
+            else if (s === 'API_OFFLINE') { color = 'var(--yellow)'; label = 'API_OFFLINE'; }
             else if (s === 'MAINTENANCE') { color = 'var(--yellow)'; label = 'MAINTENANCE'; }
 
             return `
@@ -594,7 +673,10 @@
                         <div class="monitor-label mono" style="color:${color}; font-size: 1.4rem; margin-top: 15px;">${label}</div>
                     </div>
                     <div class="monitor-stats">
-                        <div class="mstat"><div class="mk mono">Server</div><div class="mv mono">${DB.settings.ip}</div></div>
+                        <div class="mstat">
+                            <div class="mk mono">Server</div>
+                            <div class="mv mono ip-copy-btn" onclick="copyIP()" title="Кликните, чтобы скопировать">${DB.settings.ip}</div>
+                        </div>
                         <div class="mstat"><div class="mk mono">Version</div><div class="mv mono">${DB.settings.version}</div></div>
                         <div class="mstat"><div class="mk mono">Access</div><div class="mv mono">INTERNAL</div></div>
                     </div>
@@ -623,17 +705,28 @@
             if (!ip || ip.length < 3) return;
             try {
                 const res = await fetch(`https://api.mcsrvstat.us/3/${encodeURIComponent(ip)}`);
+                if(!res.ok) throw new Error('API Error');
                 const data = await res.json();
+                
                 const newStatus = data.online ? 'ONLINE' : 'OFFLINE';
                 const newCount = data.online && data.players ? String(data.players.online) : '0';
+                const newMax = data.online && data.players ? String(data.players.max) : '100';
                 
-                if (DB.settings.serverStatus !== newStatus || DB.settings.onlineCount !== newCount) {
+                if (DB.settings.serverStatus !== newStatus || DB.settings.onlineCount !== newCount || DB.settings.maxSlots !== newMax) {
                     DB.settings.serverStatus = newStatus;
                     DB.settings.onlineCount = newCount;
+                    DB.settings.maxSlots = newMax;
                     await saveSettingToSupabase('serverStatus', newStatus);
                     await saveSettingToSupabase('onlineCount', newCount);
+                    await saveSettingToSupabase('maxSlots', newMax);
                 }
-            } catch (e) { console.error('mcstatus error:', e); }
+            } catch (e) { 
+                console.error('mcstatus error:', e); 
+                if (DB.settings.serverStatus !== 'API_OFFLINE') {
+                    DB.settings.serverStatus = 'API_OFFLINE';
+                    await saveSettingToSupabase('serverStatus', 'API_OFFLINE');
+                }
+            }
         }
 
         // ==========================================
@@ -642,12 +735,13 @@
         const routes = {
             '/home': renderHome, '/rules-discord': renderRulesDiscord, '/rules-rp': renderRulesRP,
             '/rules-admin': renderRulesAdmin, '/management': renderManagement, '/staff': renderStaff,
-            '/roles': renderRoles, '/download': renderDownload, '/about': renderAbout, '/admin': renderAdmin
+            '/roles': renderRoles, '/download': renderDownload, '/about': renderAbout, 
+            '/admin': renderAdmin, '/404': render404
         };
 
         function router() {
             let hash = window.location.hash.replace('#', '') || '/home';
-            if (!routes[hash]) hash = '/home';
+            if (!routes[hash]) hash = '/404'; // Перенаправление на 404, если роут не найден
             
             document.querySelectorAll('.nav-link').forEach(link => {
                 link.classList.toggle('active', link.getAttribute('href') === '#' + hash);
@@ -662,7 +756,6 @@
                     catch (err) { console.error(err); content.innerHTML = `<div class="panel"><h2 style="color:red">Ошибка</h2></div>`; }
                     content.classList.remove('fade-out');
                     
-                    // ВАЖНО: Инициализируем фонарик ПОСЛЕ того, как HTML отрисован
                     initMouseGlow(); 
                 }, 200);
             }
@@ -675,6 +768,24 @@
 
         window.addEventListener('hashchange', router);
         function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); }
+
+        // Скролл наверх
+        window.addEventListener('scroll', () => {
+            const btn = document.getElementById('scrollTopBtn');
+            if (window.scrollY > 300) btn.classList.add('show');
+            else btn.classList.remove('show');
+        });
+
+        // ==========================================
+        // ГЕНЕРАТОР АВАТАРОК
+        // ==========================================
+        function getAvatarHTML(nick) {
+            if(!nick) return '';
+            // Пытаемся загрузить с mc-heads (лицензия), при ошибке - ely.by (пиратка), при ошибке - Стив
+            return `<img class="staff-avatar" src="https://mc-heads.net/avatar/${nick}/32" 
+                    onerror="this.onerror=null; this.src='https://skinsystem.ely.by/heads/${nick}/32'; 
+                    if(this.src.includes('ely.by')) { this.onerror=null; this.src='https://mc-heads.net/avatar/Steve/32'; }">`;
+        }
 
         // ==========================================
         // СТРАНИЦЫ
@@ -705,11 +816,11 @@
 
                 <div class="status-row mb-20">
                     <div class="status-cell mouse-glow">
-                        <div class="head"><div class="dot" style="background: ${DB.settings.serverStatus === 'OFFLINE' ? 'var(--red)' : 'var(--green)'}"></div><strong>Сервер ${DB.settings.serverStatus === 'OFFLINE' ? 'оффлайн' : 'онлайн'}</strong></div>
+                        <div class="head"><div class="dot" style="background: ${DB.settings.serverStatus === 'OFFLINE' ? 'var(--red)' : (DB.settings.serverStatus === 'API_OFFLINE' ? 'var(--yellow)' : 'var(--green)')}"></div><strong>Сервер ${DB.settings.serverStatus === 'OFFLINE' ? 'оффлайн' : (DB.settings.serverStatus === 'API_OFFLINE' ? 'неизвестно' : 'онлайн')}</strong></div>
                         <div class="sub">Актуальный статус проекта</div>
                     </div>
                     <div class="status-cell mouse-glow">
-                        <div class="big">${DB.settings.onlineCount || '0'}</div>
+                        <div class="big">${DB.settings.onlineCount || '0'} <span style="font-size: 16px; color: var(--text-muted);">/ ${DB.settings.maxSlots || '0'}</span></div>
                         <div class="k">Игроков онлайн</div>
                     </div>
                     <div class="status-cell mouse-glow">
@@ -742,7 +853,9 @@
                     <div class="mgmt-level">${s.level || 'LEVEL-5'}</div>
                     <div class="mgmt-tag">// ${s.tag || 'STAFF'}</div>
                     <div class="mgmt-role">${s.role}</div>
-                    <div class="mgmt-name">${s.name}</div>
+                    <div class="mgmt-name" style="display:flex; align-items:center; justify-content:center; gap:10px;">
+                        ${getAvatarHTML(s.name)} ${s.name}
+                    </div>
                 </div>
             `).join('');
             container.innerHTML = `<h1 class="mb-20">Руководство проекта</h1><div class="mgmt-grid">${cards}</div>`;
@@ -760,8 +873,11 @@
                 members.forEach((s, i) => {
                     html += `
                         <div class="staff-row mouse-glow">
-                            <div class="staff-num">${String(i + 1).padStart(2, '0')}</div>
-                            <div class="staff-role-name">${s.role}</div>
+                            <div class="staff-left">
+                                <div class="staff-num">${String(i + 1).padStart(2, '0')}</div>
+                                ${getAvatarHTML(s.name)}
+                                <div class="staff-role-name">${s.role}</div>
+                            </div>
                             <div class="${s.name ? 'staff-person' : 'staff-vacant'}">${s.name || 'VACANT'}</div>
                         </div>
                     `;
@@ -837,10 +953,9 @@
                 ? `<iframe src="https://discord.com/widget?id=${widgetId}&theme=dark" width="100%" height="350" allowtransparency="true" frameborder="0" sandbox="allow-popups allow-popups-to-escape-sandbox allow-scripts allow-same-origin" style="border-radius: 8px; border: 1px solid var(--border);"></iframe>`
                 : `<p class="muted">ID виджета Discord не настроен. Укажите его в админ-панели.</p>`;
 
-            // ССЫЛКИ НА СОЦСЕТИ (ЗАМЕНИ НА СВОИ!)
-            const linkDiscord = "https://discord.gg/jhKv4RTKxM";
-            const linkTelegram = "https://t.me/nexus_scprp";
-            const linkVK = "https://vk.com/заглушка";
+            const linkDiscord = DB.settings.linkDiscord || "#";
+            const linkTelegram = DB.settings.linkTelegram || "#";
+            const linkVK = DB.settings.linkVK || "#";
 
             container.innerHTML = `
                 <h1 class="mb-20">О нас / Связь</h1>
@@ -868,6 +983,19 @@
             `;
         }
 
+        function render404(container) {
+            container.innerHTML = `
+                <div class="terminal-404">
+                    <div>[ SYSTEM_CRITICAL_ERROR ]</div>
+                    <div>404: <span>DOCUMENT_NOT_FOUND</span></div>
+                    <div>> <span>The requested file does not exist in the database.</span></div>
+                    <div>> <span>Access Level: Denied</span></div>
+                    <br>
+                    <a href="#/home" class="btn btn-outline" style="font-family: var(--font-mono); font-size: 0.8rem; border-color: var(--red); color: var(--red);">> RETURN TO TERMINAL <span class="cursor"></span></a>
+                </div>
+            `;
+        }
+
         // ==========================================
         // АДМИНКА
         // ==========================================
@@ -889,18 +1017,22 @@
                     <button class="admin-tab" onclick="switchTab('tab-staff', this)">Персонал</button>
                     <button class="admin-tab" onclick="switchTab('tab-rules', this)">Правила</button>
                     <button class="admin-tab" onclick="switchTab('tab-logs', this)">Логи</button>
+                    <button class="admin-tab" onclick="switchTab('tab-data', this)">Данные</button>
                 </div>
 
                 <div class="admin-section active" id="tab-news">
                     <div class="grid-2">
                         <div class="panel mouse-glow">
-                            <h2>// Создать новость</h2>
+                            <h2 id="newsFormTitle">// Создать новость</h2>
                             <input type="text" id="newsTitle" class="input-field" placeholder="Заголовок">
                             <textarea id="newsContent" class="input-field" placeholder="Текст новости..."></textarea>
                             <label class="mono muted" style="font-size:0.8rem; display:block; margin-bottom:5px;">Картинка (файл или ссылка)</label>
                             <input type="file" id="newsImageFile" class="input-field" accept="image/*" style="padding: 8px;">
                             <input type="url" id="newsImage" class="input-field" placeholder="URL картинки (если нет файла)">
-                            <button class="btn btn-primary" onclick="createNews()">ОПУБЛИКОВАТЬ</button>
+                            <div style="display:flex; gap:10px;">
+                                <button class="btn btn-primary" id="newsSubmitBtn" onclick="createNews()">ОПУБЛИКОВАТЬ</button>
+                                <button class="btn btn-outline" id="newsCancelBtn" onclick="resetNewsForm()" style="display:none;">ОТМЕНА</button>
+                            </div>
                         </div>
                         <div class="panel mouse-glow">
                             <h2>// Опубликовано</h2>
@@ -908,7 +1040,10 @@
                                 ${DB.news.map(n => `
                                     <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(0,0,0,0.3); padding:10px 15px; border-radius:8px; margin-bottom:10px; border:1px solid var(--border);">
                                         <div><strong style="color:#fff">${n.title}</strong></div>
-                                        <button class="btn btn-danger" style="padding:5px 10px;" onclick="deleteNews(${n.id})">✕</button>
+                                        <div style="display:flex; gap:5px;">
+                                            <button class="btn btn-outline" style="padding:5px 10px;" onclick="editNews(${n.id})" title="Редактировать">✎</button>
+                                            <button class="btn btn-danger" style="padding:5px 10px;" onclick="deleteNews(${n.id})" title="Удалить">✕</button>
+                                        </div>
                                     </div>
                                 `).join('')}
                             </div>
@@ -927,15 +1062,20 @@
                             <div><label class="mono muted">IP Сервера</label><input type="text" id="setIp" class="input-field" value="${DB.settings.ip}"></div>
                             <div><label class="mono muted">Версия</label><input type="text" id="setVer" class="input-field" value="${DB.settings.version}"></div>
                         </div>
-                        <div class="mb-20">
-                            <label class="mono muted">ID Виджета Discord (только цифры)</label>
-                            <input type="text" id="setDiscordWidget" class="input-field" value="${DB.settings.discordWidgetId || ''}" placeholder="Например: 123456789012345678">
+                        <div class="grid-2 mb-20">
+                            <div><label class="mono muted">Ссылка Discord</label><input type="text" id="setLinkDiscord" class="input-field" value="${DB.settings.linkDiscord || ''}"></div>
+                            <div><label class="mono muted">Ссылка Telegram</label><input type="text" id="setLinkTelegram" class="input-field" value="${DB.settings.linkTelegram || ''}"></div>
+                        </div>
+                        <div class="grid-2 mb-20">
+                            <div><label class="mono muted">Ссылка ВКонтакте</label><input type="text" id="setLinkVK" class="input-field" value="${DB.settings.linkVK || ''}"></div>
+                            <div><label class="mono muted">ID Виджета Discord (только цифры)</label><input type="text" id="setDiscordWidget" class="input-field" value="${DB.settings.discordWidgetId || ''}"></div>
                         </div>
                         <div class="grid-2">
                             <div><label class="mono muted">Статус СЕРВЕРА</label>
                                 <select id="setServerStatus" class="input-field">
                                     <option value="ONLINE" ${DB.settings.serverStatus==='ONLINE'?'selected':''}>ONLINE</option>
                                     <option value="OFFLINE" ${DB.settings.serverStatus==='OFFLINE'?'selected':''}>OFFLINE</option>
+                                    <option value="API_OFFLINE" ${DB.settings.serverStatus==='API_OFFLINE'?'selected':''}>API_OFFLINE</option>
                                 </select>
                             </div>
                             <div><label class="mono muted">Статус ХОСТИНГА</label>
@@ -981,7 +1121,6 @@
                     <div class="panel mouse-glow">
                         <h2>// Редактор правил</h2>
                         
-                        <!-- ПРАВИЛА DISCORD -->
                         <div class="wysiwyg-wrap">
                             <label class="mono muted mb-20" style="display:block;">Правила Discord</label>
                             <div class="wysiwyg-toolbar">
@@ -1014,7 +1153,6 @@
                             <div id="rulesDiscord" class="wysiwyg-editor" contenteditable="true">${DB.rules.discord}</div>
                         </div>
 
-                        <!-- ПРАВИЛА RP -->
                         <div class="wysiwyg-wrap">
                             <label class="mono muted mb-20" style="display:block;">Правила Minecraft / RP</label>
                             <div class="wysiwyg-toolbar">
@@ -1047,7 +1185,6 @@
                             <div id="rulesRp" class="wysiwyg-editor" contenteditable="true">${DB.rules.rp}</div>
                         </div>
 
-                        <!-- ПРАВИЛА ПЕРСОНАЛА -->
                         <div class="wysiwyg-wrap">
                             <label class="mono muted mb-20" style="display:block;">Правила персонала</label>
                             <div class="wysiwyg-toolbar">
@@ -1092,6 +1229,21 @@
                         </div>
                     </div>
                 </div>
+
+                <div class="admin-section" id="tab-data">
+                    <div class="panel mouse-glow">
+                        <h2>// Бэкап Базы Данных</h2>
+                        <p class="muted mb-20">Скачайте файл со всеми настройками, правилами и новостями, чтобы не потерять их при сбое.</p>
+                        <button class="btn btn-primary" onclick="exportData()">📦 СКАЧАТЬ БЭКАП (JSON)</button>
+                        
+                        <hr style="border-color: var(--border); margin: 30px 0;">
+                        
+                        <h2>// Восстановление</h2>
+                        <p class="muted mb-20">Загрузите ранее сохраненный JSON-файл для восстановления данных.</p>
+                        <input type="file" id="importFile" class="input-field" accept=".json" style="padding: 10px;">
+                        <button class="btn btn-outline" onclick="importData()">📥 ВОССТАНОВИТЬ ИЗ ФАЙЛА</button>
+                    </div>
+                </div>
             `;
             renderAdminStaffList();
         }
@@ -1114,11 +1266,38 @@
             DB.settings.hostingStatus = document.getElementById('setHostingStatus').value;
             DB.settings.autoStatus = document.getElementById('swAutoStatus').classList.contains('on');
             DB.settings.discordWidgetId = document.getElementById('setDiscordWidget').value.trim();
+            DB.settings.linkDiscord = document.getElementById('setLinkDiscord').value.trim();
+            DB.settings.linkTelegram = document.getElementById('setLinkTelegram').value.trim();
+            DB.settings.linkVK = document.getElementById('setLinkVK').value.trim();
 
             for (let key in DB.settings) { await saveSettingToSupabase(key, DB.settings[key]); }
             await addLog('Обновил настройки сервера');
             showToast('Настройки сохранены!');
             router();
+        }
+
+        function editNews(id) {
+            const news = DB.news.find(n => n.id === id);
+            if(!news) return;
+            DB.editingNewsId = id;
+            document.getElementById('newsTitle').value = news.title;
+            document.getElementById('newsContent').value = news.content;
+            document.getElementById('newsImage').value = news.image || '';
+            document.getElementById('newsFormTitle').textContent = '// Редактировать новость';
+            document.getElementById('newsSubmitBtn').textContent = 'СОХРАНИТЬ ИЗМЕНЕНИЯ';
+            document.getElementById('newsCancelBtn').style.display = 'inline-flex';
+            document.getElementById('tab-news').scrollIntoView({behavior: 'smooth'});
+        }
+
+        function resetNewsForm() {
+            DB.editingNewsId = null;
+            document.getElementById('newsTitle').value = '';
+            document.getElementById('newsContent').value = '';
+            document.getElementById('newsImage').value = '';
+            document.getElementById('newsImageFile').value = '';
+            document.getElementById('newsFormTitle').textContent = '// Создать новость';
+            document.getElementById('newsSubmitBtn').textContent = 'ОПУБЛИКОВАТЬ';
+            document.getElementById('newsCancelBtn').style.display = 'none';
         }
 
         async function createNews() {
@@ -1146,19 +1325,33 @@
                 finalImage = publicUrl.publicUrl;
             }
 
-            const date = new Date().toLocaleDateString('ru-RU');
-            const { data, error } = await db.from('news').insert([{ title, content, image: finalImage, date }]).select();
+            if (DB.editingNewsId) {
+                // Обновляем существующую
+                const { error } = await db.from('news').update({ title, content, image: finalImage }).eq('id', DB.editingNewsId);
+                if (error) return showToast('Ошибка БД: ' + error.message, 'error');
+                
+                const idx = DB.news.findIndex(n => n.id === DB.editingNewsId);
+                if(idx > -1) { DB.news[idx].title = title; DB.news[idx].content = content; DB.news[idx].image = finalImage; }
+                
+                await addLog('Отредактировал новость: ' + title);
+                showToast('Новость обновлена!');
+            } else {
+                // Создаем новую
+                const date = new Date().toLocaleDateString('ru-RU');
+                const { data, error } = await db.from('news').insert([{ title, content, image: finalImage, date }]).select();
+                if (error) return showToast('Ошибка БД: ' + error.message, 'error');
+                
+                DB.news.unshift(data[0]);
+                await addLog('Опубликовал новость: ' + title);
+                showToast('Новость опубликована!');
+            }
             
-            if (error) return showToast('Ошибка БД: ' + error.message, 'error');
-            
-            DB.news.unshift(data[0]);
-            await addLog('Опубликовал новость: ' + title);
-            showToast('Новость опубликована!');
+            resetNewsForm();
             router();
         }
 
         async function deleteNews(id) {
-            if (!confirm('Удалить?')) return;
+            if (!await showConfirm('УДАЛИТЬ ЭТУ НОВОСТЬ?')) return;
             const { error } = await db.from('news').delete().eq('id', id);
             if (error) return showToast('Ошибка: ' + error.message, 'error');
             DB.news = DB.news.filter(n => n.id !== id);
@@ -1179,7 +1372,8 @@
                 <div class="staff-admin-row" draggable="true" data-index="${index}">
                     <div style="display:flex; align-items:center;">
                         <span class="drag-handle">≡</span>
-                        <strong style="color:#fff; margin-right:10px;">${s.name}</strong> 
+                        ${getAvatarHTML(s.name)}
+                        <strong style="color:#fff; margin:0 10px;">${s.name}</strong> 
                         <span class="muted">${s.role}</span>
                     </div>
                     <button class="btn btn-danger" style="padding:5px 10px;" onclick="deleteStaffMember(${index})">✕</button>
@@ -1245,7 +1439,7 @@
         }
 
         async function deleteStaffMember(index) {
-            if (!confirm('Удалить сотрудника?')) return;
+            if (!await showConfirm('УДАЛИТЬ ЭТОГО СОТРУДНИКА?')) return;
             const name = DB.staff[index].name;
             DB.staff.splice(index, 1);
             await saveSettingToSupabase('staff_data', DB.staff);
@@ -1278,7 +1472,6 @@
             const editor = wrap.querySelector('.wysiwyg-editor');
             const isCodeMode = btn.getAttribute('data-active') === 'true';
             
-            // Определяем, какой ключ правим (discord, rp или staff)
             let key = 'discord';
             if (editor.id === 'rulesRp') key = 'rp';
             if (editor.id === 'rulesStaff') key = 'staff';
@@ -1293,7 +1486,6 @@
                 btn.setAttribute('data-active', 'false');
                 let rawText = editor.textContent;
                 
-                // Если вставили JSON
                 if (rawText.trim().startsWith('{') && rawText.trim().endsWith('}')) {
                     try {
                         const parsed = JSON.parse(rawText);
@@ -1301,7 +1493,6 @@
                     } catch (e) {}
                 }
                 
-                // Декодируем HTML
                 let decoded = rawText;
                 for (let i = 0; i < 2; i++) {
                     if (decoded.includes('&lt;')) {
@@ -1319,16 +1510,77 @@
 
         function execCmd(command, value = null) { document.execCommand(command, false, value); }
 
-        function formatBlock(className) {
-            const selection = window.getSelection();
-            if (!selection.rangeCount) return;
-            const range = selection.getRangeAt(0);
-            if (range.collapsed) return showToast('Выделите текст!', 'error');
-            const div = document.createElement('div');
-            div.className = className;
-            div.appendChild(range.extractContents());
-            range.insertNode(div);
-            selection.removeAllRanges();
+        // ==========================================
+        // ЭКСПОРТ / ИМПОРТ
+        // ==========================================
+        async function exportData() {
+            showToast('Сборка данных...');
+            try {
+                const settingsRes = await db.from('site_settings').select('*');
+                const rulesRes = await db.from('site_rules').select('*');
+                const newsRes = await db.from('news').select('*');
+                
+                const backup = {
+                    _meta: { date: new Date().toISOString(), version: "Nexus 1.0" },
+                    settings: settingsRes.data,
+                    rules: rulesRes.data,
+                    news: newsRes.data
+                };
+                
+                const blob = new Blob([JSON.stringify(backup, null, 2)], {type: 'application/json'});
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `nexus_backup_${Date.now()}.json`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                
+                showToast('Бэкап успешно скачан!');
+            } catch(e) {
+                console.error(e);
+                showToast('Ошибка при создании бэкапа', 'error');
+            }
+        }
+
+        async function importData() {
+            const fileInput = document.getElementById('importFile');
+            const file = fileInput.files[0];
+            if(!file) return showToast('Выберите файл!', 'error');
+            
+            if (!await showConfirm('ВЫ УВЕРЕНЫ? ЭТО ПЕРЕЗАПИШЕТ ВСЕ ДАННЫЕ НА САЙТЕ!')) return;
+            
+            showToast('Восстановление...');
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    
+                    if(data.settings) {
+                        const cleanSettings = data.settings.map(s => ({ key: s.key, value: s.value }));
+                        await db.from('site_settings').upsert(cleanSettings);
+                    }
+                    if(data.rules) {
+                        const cleanRules = data.rules.map(r => ({ key: r.key, content: r.content }));
+                        await db.from('site_rules').upsert(cleanRules);
+                    }
+                    if(data.news) {
+                        // Очищаем текущую таблицу новостей
+                        await db.from('news').delete().neq('id', 0);
+                        // Вставляем новые
+                        const cleanNews = data.news.map(n => ({ title: n.title, content: n.content, image: n.image, date: n.date }));
+                        await db.from('news').insert(cleanNews);
+                    }
+                    
+                    showToast('Данные восстановлены!');
+                    setTimeout(() => location.reload(), 1500);
+                } catch (err) {
+                    console.error(err);
+                    showToast('Ошибка при восстановлении. Проверьте файл.', 'error');
+                }
+            };
+            reader.readAsText(file);
         }
 
         // ==========================================
@@ -1345,7 +1597,10 @@
                 document.getElementById('adminNavLink').style.display = 'flex';
                 closeModal('loginModal');
                 window.location.hash = '#/admin';
-                await addLog('Вход в систему');
+                
+                const ua = navigator.userAgent;
+                const browser = ua.includes("Chrome") ? "Chrome" : ua.includes("Firefox") ? "Firefox" : ua.includes("Safari") ? "Safari" : "Unknown";
+                await addLog(`Вход в систему (${browser})`);
             }
         }
 
