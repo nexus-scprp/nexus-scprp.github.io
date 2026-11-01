@@ -777,18 +777,17 @@
         });
 
         // ==========================================
-        // ГЕНЕРАТОР АВАТАРОК (СТАБИЛЬНЫЙ + 2 СЛОЙ)
+        // ГЕНЕРАТОР АВАТАРОК (ELY.BY + ЛИЦЕНЗИЯ)
         // ==========================================
         function getAvatarHTML(nick) {
             if(!nick) return '';
             const safeNick = encodeURIComponent(nick);
             
-            // Логика: 
-            // 1. Пытаемся загрузить лицензию (Minotar - надежный, отдает с оверлеем)
-            // 2. Если 404 -> грузим Ely.by (пиратка)
-            // 3. Если Ely.by тоже 404 -> ставим Стива
-            return `<img class="staff-avatar" src="https://minotar.net/avatar/${safeNick}/32" 
-                    onerror="this.onerror=function(){this.src='https://minotar.net/avatar/Steve/32';}; this.src='https://skinsystem.ely.by/heads/${safeNick}/32';">`;
+            // 1. Пытаемся загрузить лицензию (Minotar). Если падает — 2. Ely.by. Если и там пусто — 3. Стив.
+            return `<img class="staff-avatar" 
+                    src="https://minotar.net/avatar/${safeNick}/32" 
+                    onerror="this.onerror=function(){this.src='https://minotar.net/avatar/Steve/32';}; this.src='https://skinsystem.ely.by/skins/${safeNick}.png';"
+                    style="object-fit: none; object-position: -8px -8px; width: 32px; height: 32px; transform: scale(0.5); transform-origin: top left; image-rendering: pixelated;">`;
         }
 
         // ==========================================
