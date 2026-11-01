@@ -784,24 +784,37 @@
         });
 
         // ==========================================
-        // ГЕНЕРАТОР АВАТАРОК (ELY.BY + ЛИЦЕНЗИЯ)
+        // ГЕНЕРАТОР АВАТАРОК (КАСКАДНЫЙ ФОЛЛБЕК)
         // ==========================================
-        // Генератор аватарок с умным фоллбеком (Лицензия -> Ely.by -> Стив)
         function getAvatarHTML(nick, source = 'mojang') {
             if(!nick) return '';
             const safeNick = encodeURIComponent(nick);
+            const steve = `https://minotar.net/helm/Steve/32`;
             
-            // Если выбран Ely (пиратка)
+            let urls = [];
             if (source === 'ely') {
-                return `<img class="staff-avatar" src="https://skinsystem.ely.by/heads/${safeNick}/32" 
-                        onerror="this.onerror=function(){this.src='https://mc-heads.net/avatar/Steve/32'}; 
-                        this.src='https://mc-heads.net/avatar/${safeNick}/32';">`;
-            } 
+                urls = [
+                    `https://skinsystem.ely.by/heads/${safeNick}/32`,
+                    `https://minotar.net/helm/${safeNick}/32`,
+                    `https://visage.surgeplay.com/head/32/${safeNick}`,
+                    `https://mc-heads.net/avatar/${safeNick}/32`
+                ];
+            } else {
+                urls = [
+                    `https://minotar.net/helm/${safeNick}/32`,
+                    `https://visage.surgeplay.com/head/32/${safeNick}`,
+                    `https://mc-heads.net/avatar/${safeNick}/32`,
+                    `https://skinsystem.ely.by/heads/${safeNick}/32`
+                ];
+            }
+
+            // Собираем каскадный onerror (пробует url[1], потом url[2], потом url[3], потом Стива)
+            let onerror = `this.onerror=null; this.src='${steve}';`;
+            for (let i = urls.length - 1; i >= 1; i--) {
+                onerror = `this.onerror=function(){ ${onerror} }; this.src='${urls[i]}';`;
+            }
             
-            // Если выбрана Лицензия (или источник не указан)
-            return `<img class="staff-avatar" src="https://mc-heads.net/avatar/${safeNick}/32" 
-                    onerror="this.onerror=function(){this.src='https://mc-heads.net/avatar/Steve/32'}; 
-                    this.src='https://skinsystem.ely.by/heads/${safeNick}/32';">`;
+            return `<img class="staff-avatar" src="${urls[0]}" onerror="${onerror}">`;
         }
 
         // Живое превью скина при вводе ника в админке
