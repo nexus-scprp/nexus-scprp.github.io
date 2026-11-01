@@ -1767,22 +1767,30 @@
             document.documentElement.style.setProperty('--parallax-y', `${y}px`);
         });
 
-        window.addEventListener('load', async () => {
-            // 1. Пытаемся загрузить данные
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Функция для скрытия прелоадера
+            const hidePreloader = () => {
+                const preloader = document.getElementById('preloader');
+                if (preloader && !preloader.classList.contains('hidden')) {
+                    preloader.classList.add('hidden');
+                    setTimeout(() => preloader.remove(), 500);
+                }
+            };
+
+            // ЖЕЛЕЗНАЯ ГАРАНТИЯ: скрываем прелоадер через 1.5 секунды, даже если база висит
+            setTimeout(hidePreloader, 1500);
+
+            // Загружаем данные
             try {
                 if (db) await loadDataFromSupabase();
             } catch (e) {
                 console.error("Ошибка при загрузке данных:", e);
             }
 
-            // 2. Скрываем прелоадер в ЛЮБОМ случае
-            const preloader = document.getElementById('preloader');
-            if (preloader) {
-                preloader.classList.add('hidden');
-                setTimeout(() => preloader.remove(), 500);
-            }
+            // Скрываем сразу после загрузки данных (если успели быстрее 1.5 сек)
+            hidePreloader();
             
-            // 3. Запускаем роутер
+            // Запускаем отрисовку страницы
             router();
             setInterval(updateServerStatus, 120000);
         });
