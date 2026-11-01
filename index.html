@@ -803,41 +803,49 @@
         // ==========================================
         // ГЕНЕРАТОР АВАТАРОК (ELY.BY ЧЕРЕЗ SKINS + CSS)
         // ==========================================
-        // Глобальная функция для смены скина при ошибке загрузки
-        // Глобальная функция для смены скина при ошибке загрузки
+        // Глобальная функция для умной смены скина при ошибке загрузки
         window.handleSkinError = function(img) {
             const stage = parseInt(img.getAttribute('data-stage') || '0');
+            const fallbacks = (img.getAttribute('data-fallbacks') || '').split(',');
             const steve = 'https://minotar.net/helm/Steve/32';
             
-            if (stage === 0) {
-                img.setAttribute('data-stage', '1');
-                img.src = img.getAttribute('data-fallback');
-            } else if (stage === 1) {
-                img.setAttribute('data-stage', '2');
+            // Если есть еще ссылки в запасе — берем следующую
+            if (stage < fallbacks.length && fallbacks[stage] !== "") {
+                img.setAttribute('data-stage', stage + 1);
+                img.src = fallbacks[stage];
+            } else {
+                // Если все упали — ставим Стива
+                img.onerror = null;
                 img.src = steve;
             }
         };
 
-        // ==========================================
-        // ГЕНЕРАТОР АВАТАРОК (ИДЕАЛЬНЫЙ 2 СЛОЙ)
-        // ==========================================
         function getAvatarHTML(nick, source = 'mojang') {
             if(!nick) return '';
             const safeNick = encodeURIComponent(nick);
             
             if (source === 'ely') {
-                // Для Ely.by: загружаем текстуру 64x64 и накладываем 2 слоя абсолютным позиционированием
+                // Для Ely.by: 2 слоя через абсолютное позиционирование
                 const skinUrl = `https://skinsystem.ely.by/skins/${safeNick}.png`;
+                
+                // Если скин не найден (404), заменяем весь блок на Стива
+                const onerrorEly = `this.parentNode.outerHTML='<img class=\\'staff-avatar\\' src=\\'https://minotar.net/helm/Steve/32\\'>'`;
+                
                 return `<div class="staff-avatar" style="position:relative; overflow:hidden; border-radius:4px; background:#111; border:1px solid var(--border); display:inline-block; width:32px; height:32px; vertical-align:middle;">
-                            <!-- Слой 1: Голова (смещение 8,8 умноженное на 4) -->
-                            <img src="${skinUrl}" style="position:absolute; width:256px; height:256px; left:-32px; top:-32px; image-rendering:pixelated;">
-                            <!-- Слой 2: Оверлей/Шлем (смещение 40,8 умноженное на 4) -->
-                            <img src="${skinUrl}" style="position:absolute; width:256px; height:256px; left:-160px; top:-32px; image-rendering:pixelated;">
+                            <img src="${skinUrl}" style="position:absolute; width:256px; height:256px; left:-32px; top:-32px; image-rendering:pixelated;" onerror="${onerrorEly}">
+                            <img src="${skinUrl}" style="position:absolute; width:256px; height:256px; left:-160px; top:-32px; image-rendering:pixelated;" onerror="this.style.display='none'">
                         </div>`;
             } else {
-                // Для лицензии: mc-heads автоматически накладывает второй слой!
-                return `<img class="staff-avatar" src="https://mc-heads.net/avatar/${safeNick}/32" 
-                        onerror="this.onerror=null; this.src='https://visage.surgeplay.com/head/32/${safeNick}';" 
+                // Для лицензии: каскадный фоллбек (mc-heads -> minotar -> visage -> Steve)
+                const primary = `https://mc-heads.net/avatar/${safeNick}/32`;
+                const fallback1 = `https://minotar.net/helm/${safeNick}/32`;
+                const fallback2 = `https://visage.surgeplay.com/head/32/${safeNick}`;
+                
+                return `<img class="staff-avatar" 
+                        src="${primary}" 
+                        data-fallbacks="${fallback1},${fallback2}" 
+                        data-stage="0" 
+                        onerror="handleSkinError(this)" 
                         title="${safeNick}">`;
             }
         }
