@@ -271,7 +271,14 @@
         .staff-row:hover { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); }
         .staff-left { display: flex; align-items: center; gap: 15px; }
         .staff-num { font-family: var(--font-mono); font-size: 1rem; font-weight: 700; color: var(--accent); min-width: 25px; }
-        .staff-avatar { width: 32px; height: 32px; border-radius: 4px; background: #111; border: 1px solid var(--border); }
+        .staff-avatar { 
+            width: 32px; 
+            height: 32px; 
+            border-radius: 4px; 
+            background: #111; 
+            border: 1px solid var(--border); 
+            image-rendering: pixelated; /* Чтобы пиксели были четкими, а не размытыми */
+        }
         .staff-role-name { font-weight: 600; color: #fff; }
         .staff-person { font-family: var(--font-mono); font-size: 0.85rem; padding: 5px 12px; background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 50px; color: #fff; }
         .staff-vacant { font-family: var(--font-mono); font-size: 0.8rem; padding: 5px 12px; border: 1px dashed var(--border); border-radius: 50px; color: var(--text-muted); }
@@ -779,15 +786,37 @@
         // ==========================================
         // ГЕНЕРАТОР АВАТАРОК (ELY.BY + ЛИЦЕНЗИЯ)
         // ==========================================
-        function getAvatarHTML(nick) {
+        // Генератор аватарок с поддержкой выбора
+        function getAvatarHTML(nick, source = 'mojang') {
             if(!nick) return '';
             const safeNick = encodeURIComponent(nick);
+            let src = '';
             
-            // 1. Пытаемся загрузить лицензию (Minotar). Если падает — 2. Ely.by. Если и там пусто — 3. Стив.
-            return `<img class="staff-avatar" 
-                    src="https://minotar.net/avatar/${safeNick}/32" 
-                    onerror="this.onerror=function(){this.src='https://minotar.net/avatar/Steve/32';}; this.src='https://skinsystem.ely.by/skins/${safeNick}.png';"
-                    style="object-fit: none; object-position: -8px -8px; width: 32px; height: 32px; transform: scale(0.5); transform-origin: top left; image-rendering: pixelated;">`;
+            if (source === 'ely') {
+                // Пиратка
+                src = `https://skinsystem.ely.by/heads/${safeNick}/32`;
+            } else {
+                // Лицензия
+                src = `https://minotar.net/helm/${safeNick}/32`;
+            }
+            
+            return `<img class="staff-avatar" src="${src}" onerror="this.onerror=null; this.src='https://minotar.net/helm/Steve/32';">`;
+        }
+
+        // Живое превью скина при вводе ника в админке
+        function updateStaffPreview() {
+            const name = document.getElementById('staffName').value.trim();
+            const source = document.getElementById('staffSkinSource').value;
+            const preview = document.getElementById('staffSkinPreview');
+            
+            if (name) {
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = getAvatarHTML(name, source);
+                const imgSrc = tempDiv.querySelector('img').src;
+                preview.src = imgSrc;
+            } else {
+                preview.src = 'https://minotar.net/helm/Steve/32';
+            }
         }
 
         // ==========================================
@@ -857,7 +886,7 @@
                     <div class="mgmt-tag">// ${s.tag || 'STAFF'}</div>
                     <div class="mgmt-role">${s.role}</div>
                     <div class="mgmt-name" style="display:flex; align-items:center; justify-content:center; gap:10px;">
-                        ${getAvatarHTML(s.name)} ${s.name}
+                            ${getAvatarHTML(s.name, s.skin_source || 'mojang')} ${s.name}
                     </div>
                 </div>
             `).join('');
@@ -878,7 +907,7 @@
                         <div class="staff-row mouse-glow">
                             <div class="staff-left">
                                 <div class="staff-num">${String(i + 1).padStart(2, '0')}</div>
-                                ${getAvatarHTML(s.name)}
+                                ${getAvatarHTML(s.name, s.skin_source || 'mojang')}
                                 <div class="staff-role-name">${s.role}</div>
                             </div>
                             <div class="${s.name ? 'staff-person' : 'staff-vacant'}">${s.name || 'VACANT'}</div>
@@ -1092,12 +1121,20 @@
                     </div>
                 </div>
 
-                <div class="admin-section" id="tab-staff">
                     <div class="panel mouse-glow mb-20">
                         <h2>// Добавить сотрудника</h2>
                         <div class="grid-2">
-                            <div><label class="mono muted">Имя (Ник)</label><input type="text" id="staffName" class="input-field" placeholder="Никнейм"></div>
-                            <div><label class="mono muted">Должность</label><input type="text" id="staffRole" class="input-field" placeholder="Модератор"></div>
+                            <div>
+                                <label class="mono muted">Имя (Ник)</label>
+                                <div style="display:flex; align-items:center; gap:10px;">
+                                    <input type="text" id="staffName" class="input-field" placeholder="Никнейм" style="margin-bottom:0;" oninput="updateStaffPreview()">
+                                    <img id="staffSkinPreview" class="staff-avatar" src="https://minotar.net/helm/Steve/32" style="flex-shrink:0;">
+                                </div>
+                            </div>
+                            <div>
+                                <label class="mono muted">Должность</label>
+                                <input type="text" id="staffRole" class="input-field" placeholder="Модератор">
+                            </div>
                         </div>
                         <div class="grid-3 mt-15">
                             <div><label class="mono muted">Отдел</label>
@@ -1109,8 +1146,18 @@
                                     <option value="builder">Билдеры</option>
                                 </select>
                             </div>
-                            <div><label class="mono muted">Тег</label><input type="text" id="staffTag" class="input-field" placeholder="FOUNDER"></div>
-                            <div><label class="mono muted">Уровень</label><input type="text" id="staffLevel" class="input-field" placeholder="LEVEL-5"></div>
+                            <div><label class="mono muted">Источник скина</label>
+                                <select id="staffSkinSource" class="input-field" onchange="updateStaffPreview()">
+                                    <option value="mojang">Лицензия (Mojang)</option>
+                                    <option value="ely">Пиратка (Ely.by)</option>
+                                </select>
+                            </div>
+                            <div><label class="mono muted">Тег / Уровень (для вышки)</label>
+                                <div style="display:flex; gap:5px;">
+                                    <input type="text" id="staffTag" class="input-field" placeholder="FOUNDER" style="margin-bottom:0;">
+                                    <input type="text" id="staffLevel" class="input-field" placeholder="LEVEL-5" style="margin-bottom:0;">
+                                </div>
+                            </div>
                         </div>
                         <button class="btn btn-primary mt-15" onclick="addStaffMember()">ДОБАВИТЬ</button>
                     </div>
@@ -1375,11 +1422,16 @@
                 <div class="staff-admin-row" draggable="true" data-index="${index}">
                     <div style="display:flex; align-items:center;">
                         <span class="drag-handle">≡</span>
-                        ${getAvatarHTML(s.name)}
+                        ${getAvatarHTML(s.name, s.skin_source || 'mojang')}
                         <strong style="color:#fff; margin:0 10px;">${s.name}</strong> 
                         <span class="muted">${s.role}</span>
                     </div>
-                    <button class="btn btn-danger" style="padding:5px 10px;" onclick="deleteStaffMember(${index})">✕</button>
+                    <div style="display:flex; gap:5px;">
+                        <button class="btn btn-outline" style="padding:5px 10px; font-size:0.7rem; font-family:monospace;" onclick="toggleStaffSkinSource(${index})" title="Сменить источник скина">
+                            ${s.skin_source === 'ely' ? 'ELY' : 'LIC'}
+                        </button>
+                        <button class="btn btn-danger" style="padding:5px 10px;" onclick="deleteStaffMember(${index})">✕</button>
+                    </div>
                 </div>
             `).join('');
 
@@ -1430,15 +1482,25 @@
             const section = document.getElementById('staffSection').value;
             const tag = document.getElementById('staffTag').value.trim();
             const level = document.getElementById('staffLevel').value.trim();
+            const skin_source = document.getElementById('staffSkinSource').value; // СОХРАНЯЕМ ИСТОЧНИК
 
             if (!name || !role) return showToast('Заполните имя и должность!', 'error');
-            DB.staff.push({ name, role, section, tag, level });
+            
+            DB.staff.push({ name, role, section, tag, level, skin_source });
             await saveSettingToSupabase('staff_data', DB.staff);
             await addLog('Добавил сотрудника: ' + name);
             showToast('Сотрудник добавлен!');
             renderAdmin(document.getElementById('app-content'));
             const targetTab = Array.from(document.querySelectorAll('.admin-tab')).find(t => t.innerText === 'Персонал');
             if(targetTab) switchTab('tab-staff', targetTab);
+        }
+
+                // Переключение скина прямо в списке
+        async function toggleStaffSkinSource(index) {
+            DB.staff[index].skin_source = DB.staff[index].skin_source === 'ely' ? 'mojang' : 'ely';
+            await saveSettingToSupabase('staff_data', DB.staff);
+            renderAdminStaffList(); // Обновляем только список
+            showToast('Источник скина изменен на ' + (DB.staff[index].skin_source === 'ely' ? 'Ely.by' : 'Лицензию'));
         }
 
         async function deleteStaffMember(index) {
