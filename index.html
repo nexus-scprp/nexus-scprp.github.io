@@ -786,21 +786,22 @@
         // ==========================================
         // ГЕНЕРАТОР АВАТАРОК (ELY.BY + ЛИЦЕНЗИЯ)
         // ==========================================
-        // Генератор аватарок с поддержкой выбора
+        // Генератор аватарок с умным фоллбеком (Лицензия -> Ely.by -> Стив)
         function getAvatarHTML(nick, source = 'mojang') {
             if(!nick) return '';
             const safeNick = encodeURIComponent(nick);
-            let src = '';
             
+            // Если выбран Ely (пиратка)
             if (source === 'ely') {
-                // Пиратка
-                src = `https://skinsystem.ely.by/heads/${safeNick}/32`;
-            } else {
-                // Лицензия
-                src = `https://minotar.net/helm/${safeNick}/32`;
-            }
+                return `<img class="staff-avatar" src="https://skinsystem.ely.by/heads/${safeNick}/32" 
+                        onerror="this.onerror=function(){this.src='https://mc-heads.net/avatar/Steve/32'}; 
+                        this.src='https://mc-heads.net/avatar/${safeNick}/32';">`;
+            } 
             
-            return `<img class="staff-avatar" src="${src}" onerror="this.onerror=null; this.src='https://minotar.net/helm/Steve/32';">`;
+            // Если выбрана Лицензия (или источник не указан)
+            return `<img class="staff-avatar" src="https://mc-heads.net/avatar/${safeNick}/32" 
+                    onerror="this.onerror=function(){this.src='https://mc-heads.net/avatar/Steve/32'}; 
+                    this.src='https://skinsystem.ely.by/heads/${safeNick}/32';">`;
         }
 
         // Живое превью скина при вводе ника в админке
