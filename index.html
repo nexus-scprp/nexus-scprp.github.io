@@ -823,14 +823,20 @@
             const safeNick = encodeURIComponent(nick);
             
             if (source === 'ely') {
-                // Ely.by: используем ОФИЦИАЛЬНЫЙ эндпоинт для голов
-                // Он сам отдает 32x32 пикселя и включает второй слой (шлем)!
-                const elyHead = `https://skinsystem.ely.by/heads/${safeNick}/32`;
-                return `<img class="staff-avatar" src="${elyHead}" 
-                        onerror="this.onerror=null; this.src='https://minotar.net/helm/Steve/32';" 
-                        title="${safeNick}">`;
+                // Для Ely.by: используем проценты для фона, чтобы избежать искажений
+                const skinUrl = `https://skinsystem.ely.by/skins/${safeNick}.png`;
+                
+                // Если скин не найден (404), заменяем на Стива
+                const onerrorEly = `this.parentNode.outerHTML='<img class=\\'staff-avatar\\' src=\\'https://minotar.net/helm/Steve/32\\'>'`;
+                
+                return `<div class="staff-avatar" style="position:relative; overflow:hidden; border-radius:4px; background:#111; border:1px solid var(--border); display:inline-block; width:32px; height:32px; vertical-align:middle;">
+                            <!-- Слой 1: Голова (смещение 8px из 64px = 12.5%) -->
+                            <div style="position:absolute; inset:0; background-image:url('${skinUrl}'); background-size:800% 800%; background-position:-12.5% -12.5%; image-rendering:pixelated;" onerror="${onerrorEly}"></div>
+                            <!-- Слой 2: Оверлей/Шлем (смещение 40px из 64px = 62.5%) -->
+                            <div style="position:absolute; inset:0; background-image:url('${skinUrl}'); background-size:800% 800%; background-position:-62.5% -12.5%; image-rendering:pixelated;"></div>
+                        </div>`;
             } else {
-                // Для лицензии: делаем САМЫЙ СТАБИЛЬНЫЙ сервис первым (Minotar)
+                // Для лицензии: каскадный фоллбек (Minotar -> Visage -> MC-Heads -> Steve)
                 const primary = `https://minotar.net/helm/${safeNick}/32`;
                 const fallback1 = `https://visage.surgeplay.com/head/32/${safeNick}`;
                 const fallback2 = `https://mc-heads.net/avatar/${safeNick}/32`;
