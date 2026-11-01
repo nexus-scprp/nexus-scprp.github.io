@@ -231,7 +231,28 @@
         .rules-label { color: var(--accent); font-weight: 700; }
         .rules-punish { font-family: var(--font-mono); font-size: 12px; background: rgba(0,0,0,0.3); padding: 12px 16px; border-left: 2px solid var(--yellow); border-radius: 0 8px 8px 0; margin-top: 10px; color: var(--text-muted); }
         .rules-bottom-warn { text-align: center; font-family: var(--font-mono); font-size: 12px; color: var(--yellow); padding: 20px; border: 1px dashed rgba(241, 196, 15, 0.3); border-radius: var(--radius); margin-top: 30px; }
-
+        /* Стили для нативных тегов в редакторе и правилах */
+        .rules-content blockquote, .wysiwyg-editor blockquote, .rules-intro {
+            border-left: 3px solid var(--accent); padding-left: 20px; color: #C9D1D9; 
+            font-size: 14px; line-height: 1.7; margin-bottom: 35px; font-style: italic;
+        }
+        .rules-content h3, .wysiwyg-editor h3, .rules-section-title {
+            font-size: 18px; color: #fff; border-bottom: 1px solid var(--border); 
+            padding-bottom: 10px; margin-bottom: 20px; font-weight: 800;
+        }
+        .rules-content pre, .wysiwyg-editor pre, .rules-punish {
+            font-family: var(--font-mono); font-size: 12px; background: rgba(0,0,0,0.3); 
+            padding: 12px 16px; border-left: 2px solid var(--yellow); 
+            border-radius: 0 8px 8px 0; margin-top: 10px; color: var(--text-muted); 
+            white-space: pre-wrap; word-wrap: break-word;
+        }
+        .rules-content mark, .wysiwyg-editor mark, .rules-bottom-warn {
+            display: block; text-align: center; font-family: var(--font-mono); 
+            font-size: 12px; color: var(--yellow); padding: 20px; 
+            border: 1px dashed rgba(241, 196, 15, 0.3); border-radius: var(--radius); 
+            margin-top: 30px; background: transparent; color: var(--yellow);
+        }
+        
         .staff-section { margin-bottom: 30px; }
         .staff-section-header { display: flex; align-items: center; gap: 12px; padding: 12px 18px; border-radius: var(--radius); background: rgba(255,255,255,0.03); border: 1px solid var(--border); font-weight: 700; color: #fff; margin-bottom: 15px; }
         .staff-section-header.high { background: rgba(255, 77, 77, 0.1); border-color: rgba(255,77,77,0.3); }
@@ -964,15 +985,30 @@
                         <div class="wysiwyg-wrap">
                             <label class="mono muted mb-20" style="display:block;">Правила Discord</label>
                             <div class="wysiwyg-toolbar">
-                                <button onclick="execCmd('undo')" title="Отменить">↶</button>
-                                <button onclick="execCmd('redo')" title="Повторить">↷</button>
+                                <button onclick="execCmd('undo')" title="Отменить (Ctrl+Z)">↶</button>
+                                <button onclick="execCmd('redo')" title="Повторить (Ctrl+Y)">↷</button>
+                                <div style="width: 1px; background: var(--border); margin: 0 5px;"></div>
                                 <button onclick="execCmd('bold')"><b>B</b></button>
                                 <button onclick="execCmd('italic')"><i>I</i></button>
                                 <button onclick="execCmd('underline')"><u>U</u></button>
-                                <button onclick="execCmd('insertUnorderedList')">• Список</button>
-                                <button onclick="formatBlock('rules-intro')" style="color: var(--accent);">Вступление</button>
-                                <button onclick="formatBlock('rules-section-title')">Глава</button>
-                                <button onclick="formatBlock('rules-punish')" style="color: var(--yellow);">Плашка</button>
+                                <input type="color" onchange="execCmd('foreColor', this.value)" title="Цвет текста" style="width:26px; height:26px; padding:0; border:none; cursor:pointer;">
+                                <select onchange="execCmd('fontSize', this.value)" style="padding: 2px 5px;">
+                                    <option value="2">Мелкий</option>
+                                    <option value="3" selected>Обычный</option>
+                                    <option value="5">Крупный</option>
+                                    <option value="7">Огромный</option>
+                                </select>
+                                <div style="width: 1px; background: var(--border); margin: 0 5px;"></div>
+                                <button onclick="execCmd('justifyLeft')">Л</button>
+                                <button onclick="execCmd('justifyCenter')">Ц</button>
+                                <button onclick="execCmd('justifyRight')">П</button>
+                                <button onclick="execCmd('insertUnorderedList')">•</button>
+                                <button onclick="execCmd('insertOrderedList')">1.</button>
+                                <div style="width: 1px; background: var(--border); margin: 0 5px;"></div>
+                                <button onclick="execCmd('formatBlock', 'blockquote')" style="color: var(--accent);">Вступление</button>
+                                <button onclick="execCmd('formatBlock', 'h3')">Глава</button>
+                                <button onclick="execCmd('formatBlock', 'pre')" style="color: var(--yellow);">Плашка</button>
+                                <button onclick="execCmd('formatBlock', 'mark')" style="color: var(--yellow);">Внимание</button>
                                 <button onclick="toggleHtmlMode(this)" style="margin-left: auto;">&lt;/&gt;</button>
                             </div>
                             <div id="rulesDiscord" class="wysiwyg-editor" contenteditable="true">${DB.rules.discord}</div>
@@ -982,15 +1018,30 @@
                         <div class="wysiwyg-wrap">
                             <label class="mono muted mb-20" style="display:block;">Правила Minecraft / RP</label>
                             <div class="wysiwyg-toolbar">
-                                <button onclick="execCmd('undo')" title="Отменить">↶</button>
-                                <button onclick="execCmd('redo')" title="Повторить">↷</button>
+                                <button onclick="execCmd('undo')" title="Отменить (Ctrl+Z)">↶</button>
+                                <button onclick="execCmd('redo')" title="Повторить (Ctrl+Y)">↷</button>
+                                <div style="width: 1px; background: var(--border); margin: 0 5px;"></div>
                                 <button onclick="execCmd('bold')"><b>B</b></button>
                                 <button onclick="execCmd('italic')"><i>I</i></button>
                                 <button onclick="execCmd('underline')"><u>U</u></button>
-                                <button onclick="execCmd('insertUnorderedList')">• Список</button>
-                                <button onclick="formatBlock('rules-intro')" style="color: var(--accent);">Вступление</button>
-                                <button onclick="formatBlock('rules-section-title')">Глава</button>
-                                <button onclick="formatBlock('rules-punish')" style="color: var(--yellow);">Плашка</button>
+                                <input type="color" onchange="execCmd('foreColor', this.value)" title="Цвет текста" style="width:26px; height:26px; padding:0; border:none; cursor:pointer;">
+                                <select onchange="execCmd('fontSize', this.value)" style="padding: 2px 5px;">
+                                    <option value="2">Мелкий</option>
+                                    <option value="3" selected>Обычный</option>
+                                    <option value="5">Крупный</option>
+                                    <option value="7">Огромный</option>
+                                </select>
+                                <div style="width: 1px; background: var(--border); margin: 0 5px;"></div>
+                                <button onclick="execCmd('justifyLeft')">Л</button>
+                                <button onclick="execCmd('justifyCenter')">Ц</button>
+                                <button onclick="execCmd('justifyRight')">П</button>
+                                <button onclick="execCmd('insertUnorderedList')">•</button>
+                                <button onclick="execCmd('insertOrderedList')">1.</button>
+                                <div style="width: 1px; background: var(--border); margin: 0 5px;"></div>
+                                <button onclick="execCmd('formatBlock', 'blockquote')" style="color: var(--accent);">Вступление</button>
+                                <button onclick="execCmd('formatBlock', 'h3')">Глава</button>
+                                <button onclick="execCmd('formatBlock', 'pre')" style="color: var(--yellow);">Плашка</button>
+                                <button onclick="execCmd('formatBlock', 'mark')" style="color: var(--yellow);">Внимание</button>
                                 <button onclick="toggleHtmlMode(this)" style="margin-left: auto;">&lt;/&gt;</button>
                             </div>
                             <div id="rulesRp" class="wysiwyg-editor" contenteditable="true">${DB.rules.rp}</div>
@@ -1000,15 +1051,30 @@
                         <div class="wysiwyg-wrap">
                             <label class="mono muted mb-20" style="display:block;">Правила персонала</label>
                             <div class="wysiwyg-toolbar">
-                                <button onclick="execCmd('undo')" title="Отменить">↶</button>
-                                <button onclick="execCmd('redo')" title="Повторить">↷</button>
+                                <button onclick="execCmd('undo')" title="Отменить (Ctrl+Z)">↶</button>
+                                <button onclick="execCmd('redo')" title="Повторить (Ctrl+Y)">↷</button>
+                                <div style="width: 1px; background: var(--border); margin: 0 5px;"></div>
                                 <button onclick="execCmd('bold')"><b>B</b></button>
                                 <button onclick="execCmd('italic')"><i>I</i></button>
                                 <button onclick="execCmd('underline')"><u>U</u></button>
-                                <button onclick="execCmd('insertUnorderedList')">• Список</button>
-                                <button onclick="formatBlock('rules-intro')" style="color: var(--accent);">Вступление</button>
-                                <button onclick="formatBlock('rules-section-title')">Глава</button>
-                                <button onclick="formatBlock('rules-punish')" style="color: var(--yellow);">Плашка</button>
+                                <input type="color" onchange="execCmd('foreColor', this.value)" title="Цвет текста" style="width:26px; height:26px; padding:0; border:none; cursor:pointer;">
+                                <select onchange="execCmd('fontSize', this.value)" style="padding: 2px 5px;">
+                                    <option value="2">Мелкий</option>
+                                    <option value="3" selected>Обычный</option>
+                                    <option value="5">Крупный</option>
+                                    <option value="7">Огромный</option>
+                                </select>
+                                <div style="width: 1px; background: var(--border); margin: 0 5px;"></div>
+                                <button onclick="execCmd('justifyLeft')">Л</button>
+                                <button onclick="execCmd('justifyCenter')">Ц</button>
+                                <button onclick="execCmd('justifyRight')">П</button>
+                                <button onclick="execCmd('insertUnorderedList')">•</button>
+                                <button onclick="execCmd('insertOrderedList')">1.</button>
+                                <div style="width: 1px; background: var(--border); margin: 0 5px;"></div>
+                                <button onclick="execCmd('formatBlock', 'blockquote')" style="color: var(--accent);">Вступление</button>
+                                <button onclick="execCmd('formatBlock', 'h3')">Глава</button>
+                                <button onclick="execCmd('formatBlock', 'pre')" style="color: var(--yellow);">Плашка</button>
+                                <button onclick="execCmd('formatBlock', 'mark')" style="color: var(--yellow);">Внимание</button>
                                 <button onclick="toggleHtmlMode(this)" style="margin-left: auto;">&lt;/&gt;</button>
                             </div>
                             <div id="rulesStaff" class="wysiwyg-editor" contenteditable="true">${DB.rules.staff}</div>
