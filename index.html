@@ -289,9 +289,12 @@
         }
         
         /* Специально для Ely.by: обрезаем полный скин 64x64 до головы 32x32 */
+        /* Специально для Ely.by: обрезаем полный скин 64x64 до головы 32x32 через фон */
         .staff-avatar-ely {
-            object-fit: none;
-            object-position: -8px -8px; /* Смещаем так, чтобы в окне 32x32 оказалась только голова */
+            background-size: 256px 256px; /* Увеличиваем текстуру в 4 раза (64*4) */
+            background-position: -32px -32px; /* Сдвигаем ровно на лицо (8*4) */
+            background-repeat: no-repeat;
+            image-rendering: pixelated;
         }
         .staff-role-name { font-weight: 600; color: #fff; }
         .staff-person { font-family: var(--font-mono); font-size: 0.85rem; padding: 5px 12px; background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 50px; color: #fff; }
@@ -819,27 +822,18 @@
             if(!nick) return '';
             const safeNick = encodeURIComponent(nick);
             
-            let primaryUrl = '';
-            let fallbackUrl = '';
-            let extraClass = '';
-
             if (source === 'ely') {
-                // Пиратка: основной - ely.by (полный скин), резерв - minotar
-                primaryUrl = `https://skinsystem.ely.by/skins/${safeNick}.png`;
-                fallbackUrl = `https://minotar.net/helm/${safeNick}/32`;
-                extraClass = 'staff-avatar-ely'; 
+                // Для Ely.by используем DIV с фоновой картинкой и CSS-обрезкой
+                return `<div class="staff-avatar staff-avatar-ely" 
+                        style="background-image: url('https://skinsystem.ely.by/skins/${safeNick}.png');" 
+                        title="${safeNick}"></div>`;
             } else {
-                // Лицензия: основной - minotar, резерв - ely.by
-                primaryUrl = `https://minotar.net/helm/${safeNick}/32`;
-                fallbackUrl = `https://skinsystem.ely.by/skins/${safeNick}.png`;
-                extraClass = '';
+                // Для лицензии оставляем надежный minotar (он сам отдает ровную голову)
+                return `<img class="staff-avatar" 
+                        src="https://minotar.net/helm/${safeNick}/32" 
+                        onerror="this.onerror=null; this.src='https://minotar.net/helm/Steve/32';"
+                        title="${safeNick}">`;
             }
-
-            return `<img class="staff-avatar ${extraClass}" 
-                    src="${primaryUrl}" 
-                    data-fallback="${fallbackUrl}" 
-                    data-stage="0"
-                    onerror="handleSkinError(this)">`;
         }
 
         // Живое превью скина при вводе ника в админке
