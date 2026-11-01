@@ -804,7 +804,6 @@
         // ГЕНЕРАТОР АВАТАРОК (ELY.BY ЧЕРЕЗ SKINS + CSS)
         // ==========================================
         // Глобальная функция для умной смены скина при ошибке загрузки
-        // Глобальная функция для умной смены скина при ошибке загрузки
         window.handleSkinError = function(img) {
             const stage = parseInt(img.getAttribute('data-stage') || '0');
             const fallbacks = (img.getAttribute('data-fallbacks') || '').split(',');
@@ -819,33 +818,65 @@
             }
         };
 
-        function getAvatarHTML(nick, source = 'mojang') {
+        function getAvatarHTML(nick, source = 'mojang', customUrl = null) {
+            // Если есть своя загруженная картинка — показываем её
+            if (customUrl) {
+                return `<img class="staff-avatar" src="${customUrl}" style="object-fit: cover;" title="${nick}">`;
+            }
+
             if(!nick) return '';
             const safeNick = encodeURIComponent(nick);
             
             if (source === 'ely') {
-                // Ely.by: используем текстуру скина и вырезаем голову БЕЗ искажений
                 const skinUrl = `https://skinsystem.ely.by/skins/${safeNick}.png`;
                 const onerrorEly = `this.parentNode.outerHTML='<img class=\\'staff-avatar\\' src=\\'https://minotar.net/helm/Steve/32\\'>'`;
                 
                 return `<div class="staff-avatar" style="position:relative; overflow:hidden; border-radius:4px; background:#111; border:1px solid var(--border); display:inline-block; width:32px; height:32px; vertical-align:middle;">
-                            <!-- Слой 1: Голова -->
                             <img src="${skinUrl}" style="position:absolute; width:256px; height:auto; left:-32px; top:-32px; image-rendering:pixelated;" onerror="${onerrorEly}">
-                            <!-- Слой 2: Оверлей (шлем) -->
                             <img src="${skinUrl}" style="position:absolute; width:256px; height:auto; left:-160px; top:-32px; image-rendering:pixelated;" onerror="this.style.display='none'">
                         </div>`;
             } else {
-                // Для лицензии: каскадный фоллбек (Minotar -> Visage -> MC-Heads -> Steve)
                 const primary = `https://minotar.net/helm/${safeNick}/32`;
                 const fallback1 = `https://visage.surgeplay.com/head/32/${safeNick}`;
                 const fallback2 = `https://mc-heads.net/avatar/${safeNick}/32`;
                 
-                return `<img class="staff-avatar" 
-                        src="${primary}" 
-                        data-fallbacks="${fallback1},${fallback2}" 
-                        data-stage="0" 
-                        onerror="handleSkinError(this)" 
-                        title="${safeNick}">`;
+                return `<img class="staff-avatar" src="${primary}" data-fallbacks="${fallback1},${fallback2}" data-stage="0" onerror="handleSkinError(this)" title="${safeNick}">`;
+            }
+        }
+
+        function handleSkinSourceChange() {
+            const source = document.getElementById('staffSkinSource').value;
+            const fileInput = document.getElementById('staffCustomAvatarFile');
+            if (source === 'custom') {
+                fileInput.style.display = 'block';
+            } else {
+                fileInput.style.display = 'none';
+                fileInput.value = ''; // Очищаем файл при смене
+            }
+            updateStaffPreview();
+        }
+
+        function updateStaffPreview() {
+            const name = document.getElementById('staffName').value.trim();
+            const source = document.getElementById('staffSkinSource').value;
+            const fileInput = document.getElementById('staffCustomAvatarFile');
+            const previewContainer = document.getElementById('staffSkinPreview');
+            
+            if (!previewContainer) return;
+            
+            if (source === 'custom') {
+                if (fileInput.files && fileInput.files[0]) {
+                    const objectUrl = URL.createObjectURL(fileInput.files[0]);
+                    previewContainer.innerHTML = `<img class="staff-avatar" src="${objectUrl}" style="object-fit: cover;">`;
+                } else {
+                    previewContainer.innerHTML = `<div class="staff-avatar" style="display:flex; align-items:center; justify-content:center; color:var(--muted); font-size:10px;">IMG</div>`;
+                }
+            } else {
+                if (name) {
+                    previewContainer.innerHTML = getAvatarHTML(name, source);
+                } else {
+                    previewContainer.innerHTML = getAvatarHTML('Steve', source);
+                }
             }
         }
 
@@ -916,7 +947,7 @@
                     <div class="mgmt-tag">// ${s.tag || 'STAFF'}</div>
                     <div class="mgmt-role">${s.role}</div>
                     <div class="mgmt-name" style="display:flex; align-items:center; justify-content:center; gap:10px;">
-                            ${getAvatarHTML(s.name, s.skin_source || 'mojang')} ${s.name}
+                            ${getAvatarHTML(s.name, s.skin_source || 'mojang', s.custom_avatar)} ${s.name}
                     </div>
                 </div>
             `).join('');
@@ -937,7 +968,7 @@
                         <div class="staff-row mouse-glow">
                             <div class="staff-left">
                                 <div class="staff-num">${String(i + 1).padStart(2, '0')}</div>
-                                ${getAvatarHTML(s.name, s.skin_source || 'mojang')}
+                                ${getAvatarHTML(s.name, s.skin_source || 'mojang', s.custom_avatar)}
                                 <div class="staff-role-name">${s.role}</div>
                             </div>
                             <div class="${s.name ? 'staff-person' : 'staff-vacant'}">${s.name || 'VACANT'}</div>
@@ -1177,11 +1208,14 @@
                                     <option value="builder">Билдеры</option>
                                 </select>
                             </div>
-                            <div><label class="mono muted">Источник скина</label>
-                                <select id="staffSkinSource" class="input-field" onchange="updateStaffPreview()">
+                            <div>
+                                <label class="mono muted">Источник скина</label>
+                                <select id="staffSkinSource" class="input-field" onchange="handleSkinSourceChange()">
                                     <option value="mojang">Лицензия (Mojang)</option>
                                     <option value="ely">Пиратка (Ely.by)</option>
+                                    <option value="custom">Своя картинка (PNG/JPG)</option>
                                 </select>
+                                <input type="file" id="staffCustomAvatarFile" class="input-field" accept="image/png, image/jpeg, image/webp" style="display:none; padding: 8px;" onchange="updateStaffPreview()">
                             </div>
                             <div><label class="mono muted">Тег / Уровень (для вышки)</label>
                                 <div style="display:flex; gap:5px;">
@@ -1453,7 +1487,7 @@
                 <div class="staff-admin-row" draggable="true" data-index="${index}">
                     <div style="display:flex; align-items:center;">
                         <span class="drag-handle">≡</span>
-                        ${getAvatarHTML(s.name, s.skin_source || 'mojang')}
+                        ${getAvatarHTML(s.name, s.skin_source || 'mojang', s.custom_avatar)}
                         <strong style="color:#fff; margin:0 10px;">${s.name}</strong> 
                         <span class="muted">${s.role}</span>
                     </div>
@@ -1513,14 +1547,41 @@
             const section = document.getElementById('staffSection').value;
             const tag = document.getElementById('staffTag').value.trim();
             const level = document.getElementById('staffLevel').value.trim();
-            const skin_source = document.getElementById('staffSkinSource').value; // СОХРАНЯЕМ ИСТОЧНИК
+            const skin_source = document.getElementById('staffSkinSource').value;
+            const fileInput = document.getElementById('staffCustomAvatarFile');
 
             if (!name || !role) return showToast('Заполните имя и должность!', 'error');
+
+            let custom_avatar = null;
+
+            if (skin_source === 'custom' && fileInput.files.length > 0) {
+                const file = fileInput.files[0];
+                if (file.size > 5 * 1024 * 1024) return showToast('Файл больше 5 МБ', 'error');
+                
+                const fileName = `avatar_${Date.now()}_${file.name.replace(/[^a-zA-Z0-9.-]/g, '')}`;
+                showToast('Загрузка картинки...');
+                
+                const { data, error } = await db.storage.from('images').upload(fileName, file);
+                if (error) return showToast('Ошибка загрузки: ' + error.message, 'error');
+                
+                const { data: publicUrl } = db.storage.from('images').getPublicUrl(fileName);
+                custom_avatar = publicUrl.publicUrl;
+            }
             
-            DB.staff.push({ name, role, section, tag, level, skin_source });
+            DB.staff.push({ name, role, section, tag, level, skin_source, custom_avatar });
             await saveSettingToSupabase('staff_data', DB.staff);
             await addLog('Добавил сотрудника: ' + name);
             showToast('Сотрудник добавлен!');
+            
+            // Очищаем поля
+            document.getElementById('staffName').value = '';
+            document.getElementById('staffRole').value = '';
+            document.getElementById('staffTag').value = '';
+            document.getElementById('staffLevel').value = '';
+            document.getElementById('staffCustomAvatarFile').value = '';
+            document.getElementById('staffSkinSource').value = 'mojang';
+            handleSkinSourceChange();
+
             renderAdmin(document.getElementById('app-content'));
             const targetTab = Array.from(document.querySelectorAll('.admin-tab')).find(t => t.innerText === 'Персонал');
             if(targetTab) switchTab('tab-staff', targetTab);
@@ -1528,10 +1589,21 @@
 
                 // Переключение скина прямо в списке
         async function toggleStaffSkinSource(index) {
-            DB.staff[index].skin_source = DB.staff[index].skin_source === 'ely' ? 'mojang' : 'ely';
+            const s = DB.staff[index];
+            
+            // Если стоит кастомная картинка, при клике сбрасываем её и ставим лицензию
+            if (s.custom_avatar) {
+                s.custom_avatar = null;
+                s.skin_source = 'mojang';
+                showToast('Кастомная картинка удалена. Источник: Лицензия');
+            } else {
+                // Иначе переключаем между LIC и ELY
+                s.skin_source = s.skin_source === 'ely' ? 'mojang' : 'ely';
+                showToast('Источник скина изменен на ' + (s.skin_source === 'ely' ? 'Ely.by' : 'Лицензию'));
+            }
+            
             await saveSettingToSupabase('staff_data', DB.staff);
-            renderAdminStaffList(); // Обновляем только список
-            showToast('Источник скина изменен на ' + (DB.staff[index].skin_source === 'ely' ? 'Ely.by' : 'Лицензию'));
+            renderAdminStaffList();
         }
 
         async function deleteStaffMember(index) {
