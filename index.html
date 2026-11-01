@@ -821,7 +821,7 @@
         function getAvatarHTML(nick, source = 'mojang', customUrl = null) {
             // Если есть своя загруженная картинка — показываем её
             if (customUrl) {
-                return `<img class="staff-avatar" src="${customUrl}" style="object-fit: cover;" title="${nick}">`;
+                return `<img class="staff-avatar" src="${customUrl}" style="object-fit: cover; image-rendering: auto;" title="${nick}">`;
             }
 
             if(!nick) return '';
