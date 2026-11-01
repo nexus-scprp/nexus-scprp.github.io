@@ -959,15 +959,61 @@
                 <div class="admin-section" id="tab-rules">
                     <div class="panel mouse-glow">
                         <h2>// Редактор правил</h2>
+                        
+                        <!-- ПРАВИЛА DISCORD -->
                         <div class="wysiwyg-wrap">
                             <label class="mono muted mb-20" style="display:block;">Правила Discord</label>
                             <div class="wysiwyg-toolbar">
+                                <button onclick="execCmd('undo')" title="Отменить">↶</button>
+                                <button onclick="execCmd('redo')" title="Повторить">↷</button>
                                 <button onclick="execCmd('bold')"><b>B</b></button>
+                                <button onclick="execCmd('italic')"><i>I</i></button>
+                                <button onclick="execCmd('underline')"><u>U</u></button>
+                                <button onclick="execCmd('insertUnorderedList')">• Список</button>
+                                <button onclick="formatBlock('rules-intro')" style="color: var(--accent);">Вступление</button>
+                                <button onclick="formatBlock('rules-section-title')">Глава</button>
                                 <button onclick="formatBlock('rules-punish')" style="color: var(--yellow);">Плашка</button>
-                                <button onclick="toggleHtmlMode(this)">&lt;/&gt;</button>
+                                <button onclick="toggleHtmlMode(this)" style="margin-left: auto;">&lt;/&gt;</button>
                             </div>
                             <div id="rulesDiscord" class="wysiwyg-editor" contenteditable="true">${DB.rules.discord}</div>
                         </div>
+
+                        <!-- ПРАВИЛА RP -->
+                        <div class="wysiwyg-wrap">
+                            <label class="mono muted mb-20" style="display:block;">Правила Minecraft / RP</label>
+                            <div class="wysiwyg-toolbar">
+                                <button onclick="execCmd('undo')" title="Отменить">↶</button>
+                                <button onclick="execCmd('redo')" title="Повторить">↷</button>
+                                <button onclick="execCmd('bold')"><b>B</b></button>
+                                <button onclick="execCmd('italic')"><i>I</i></button>
+                                <button onclick="execCmd('underline')"><u>U</u></button>
+                                <button onclick="execCmd('insertUnorderedList')">• Список</button>
+                                <button onclick="formatBlock('rules-intro')" style="color: var(--accent);">Вступление</button>
+                                <button onclick="formatBlock('rules-section-title')">Глава</button>
+                                <button onclick="formatBlock('rules-punish')" style="color: var(--yellow);">Плашка</button>
+                                <button onclick="toggleHtmlMode(this)" style="margin-left: auto;">&lt;/&gt;</button>
+                            </div>
+                            <div id="rulesRp" class="wysiwyg-editor" contenteditable="true">${DB.rules.rp}</div>
+                        </div>
+
+                        <!-- ПРАВИЛА ПЕРСОНАЛА -->
+                        <div class="wysiwyg-wrap">
+                            <label class="mono muted mb-20" style="display:block;">Правила персонала</label>
+                            <div class="wysiwyg-toolbar">
+                                <button onclick="execCmd('undo')" title="Отменить">↶</button>
+                                <button onclick="execCmd('redo')" title="Повторить">↷</button>
+                                <button onclick="execCmd('bold')"><b>B</b></button>
+                                <button onclick="execCmd('italic')"><i>I</i></button>
+                                <button onclick="execCmd('underline')"><u>U</u></button>
+                                <button onclick="execCmd('insertUnorderedList')">• Список</button>
+                                <button onclick="formatBlock('rules-intro')" style="color: var(--accent);">Вступление</button>
+                                <button onclick="formatBlock('rules-section-title')">Глава</button>
+                                <button onclick="formatBlock('rules-punish')" style="color: var(--yellow);">Плашка</button>
+                                <button onclick="toggleHtmlMode(this)" style="margin-left: auto;">&lt;/&gt;</button>
+                            </div>
+                            <div id="rulesStaff" class="wysiwyg-editor" contenteditable="true">${DB.rules.staff}</div>
+                        </div>
+
                         <button class="btn btn-primary mt-15" onclick="saveRules()">СОХРАНИТЬ ПРАВИЛА</button>
                     </div>
                 </div>
@@ -1148,19 +1194,28 @@
         // ПРАВИЛА (WYSIWYG)
         // ==========================================
         async function saveRules() {
-            const rules = { discord: document.getElementById('rulesDiscord').innerHTML };
+            const rules = { 
+                discord: document.getElementById('rulesDiscord').innerHTML,
+                rp: document.getElementById('rulesRp').innerHTML,
+                staff: document.getElementById('rulesStaff').innerHTML
+            };
             for (let key in rules) { 
                 await db.from('site_rules').upsert({ key: key, content: rules[key] }); 
                 DB.rules[key] = rules[key]; 
             }
-            await addLog('Обновил правила Discord');
-            showToast('Правила сохранены!');
+            await addLog('Обновил правила');
+            showToast('Все правила сохранены!');
         }
 
         function toggleHtmlMode(btn) {
             const wrap = btn.closest('.wysiwyg-wrap');
             const editor = wrap.querySelector('.wysiwyg-editor');
             const isCodeMode = btn.getAttribute('data-active') === 'true';
+            
+            // Определяем, какой ключ правим (discord, rp или staff)
+            let key = 'discord';
+            if (editor.id === 'rulesRp') key = 'rp';
+            if (editor.id === 'rulesStaff') key = 'staff';
 
             if (!isCodeMode) {
                 btn.setAttribute('data-active', 'true');
@@ -1171,12 +1226,16 @@
             } else {
                 btn.setAttribute('data-active', 'false');
                 let rawText = editor.textContent;
+                
+                // Если вставили JSON
                 if (rawText.trim().startsWith('{') && rawText.trim().endsWith('}')) {
                     try {
                         const parsed = JSON.parse(rawText);
-                        if(parsed.discord) rawText = parsed.discord;
+                        if(parsed[key]) rawText = parsed[key];
                     } catch (e) {}
                 }
+                
+                // Декодируем HTML
                 let decoded = rawText;
                 for (let i = 0; i < 2; i++) {
                     if (decoded.includes('&lt;')) {
