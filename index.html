@@ -809,12 +809,10 @@
             const fallbacks = (img.getAttribute('data-fallbacks') || '').split(',');
             const steve = 'https://minotar.net/helm/Steve/32';
             
-            // Если есть еще ссылки в запасе — берем следующую
             if (stage < fallbacks.length && fallbacks[stage] !== "") {
                 img.setAttribute('data-stage', stage + 1);
                 img.src = fallbacks[stage];
             } else {
-                // Если все упали — ставим Стива
                 img.onerror = null;
                 img.src = steve;
             }
@@ -825,21 +823,17 @@
             const safeNick = encodeURIComponent(nick);
             
             if (source === 'ely') {
-                // Для Ely.by: 2 слоя через абсолютное позиционирование
-                const skinUrl = `https://skinsystem.ely.by/skins/${safeNick}.png`;
-                
-                // Если скин не найден (404), заменяем весь блок на Стива
-                const onerrorEly = `this.parentNode.outerHTML='<img class=\\'staff-avatar\\' src=\\'https://minotar.net/helm/Steve/32\\'>'`;
-                
-                return `<div class="staff-avatar" style="position:relative; overflow:hidden; border-radius:4px; background:#111; border:1px solid var(--border); display:inline-block; width:32px; height:32px; vertical-align:middle;">
-                            <img src="${skinUrl}" style="position:absolute; width:256px; height:256px; left:-32px; top:-32px; image-rendering:pixelated;" onerror="${onerrorEly}">
-                            <img src="${skinUrl}" style="position:absolute; width:256px; height:256px; left:-160px; top:-32px; image-rendering:pixelated;" onerror="this.style.display='none'">
-                        </div>`;
+                // Ely.by: используем ОФИЦИАЛЬНЫЙ эндпоинт для голов
+                // Он сам отдает 32x32 пикселя и включает второй слой (шлем)!
+                const elyHead = `https://skinsystem.ely.by/heads/${safeNick}/32`;
+                return `<img class="staff-avatar" src="${elyHead}" 
+                        onerror="this.onerror=null; this.src='https://minotar.net/helm/Steve/32';" 
+                        title="${safeNick}">`;
             } else {
-                // Для лицензии: каскадный фоллбек (mc-heads -> minotar -> visage -> Steve)
-                const primary = `https://mc-heads.net/avatar/${safeNick}/32`;
-                const fallback1 = `https://minotar.net/helm/${safeNick}/32`;
-                const fallback2 = `https://visage.surgeplay.com/head/32/${safeNick}`;
+                // Для лицензии: делаем САМЫЙ СТАБИЛЬНЫЙ сервис первым (Minotar)
+                const primary = `https://minotar.net/helm/${safeNick}/32`;
+                const fallback1 = `https://visage.surgeplay.com/head/32/${safeNick}`;
+                const fallback2 = `https://mc-heads.net/avatar/${safeNick}/32`;
                 
                 return `<img class="staff-avatar" 
                         src="${primary}" 
@@ -847,21 +841,6 @@
                         data-stage="0" 
                         onerror="handleSkinError(this)" 
                         title="${safeNick}">`;
-            }
-        }
-
-        // Живое превью скина при вводе ника в админке
-        function updateStaffPreview() {
-            const name = document.getElementById('staffName').value.trim();
-            const source = document.getElementById('staffSkinSource').value;
-            const previewContainer = document.getElementById('staffSkinPreview');
-            
-            if (!previewContainer) return;
-            
-            if (name) {
-                previewContainer.innerHTML = getAvatarHTML(name, source);
-            } else {
-                previewContainer.innerHTML = getAvatarHTML('Steve', source);
             }
         }
 
